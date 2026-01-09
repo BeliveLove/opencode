@@ -71,13 +71,15 @@ XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
 
 ### Agents
 
-OpenCode 內建了兩種 Agent，您可以使用 `Tab` 鍵快速切換。
+OpenCode 內建多種 Agent，您可以使用 `Tab` 鍵快速切換。
 
 - **build** - 預設模式，具備完整權限的 Agent，適用於開發工作。
 - **plan** - 唯讀模式，適用於程式碼分析與探索。
   - 預設禁止修改檔案。
   - 執行 bash 指令前會詢問權限。
   - 非常適合用來探索陌生的程式碼庫或規劃變更。
+- **doc** - 文件寫作與維護（README、指南等）。
+- **novel** - 小說/劇情寫作（續寫、改寫、保持設定一致）。
 
 此外，OpenCode 還包含一個 **general** 子 Agent，用於處理複雜搜尋與多步驟任務。此 Agent 供系統內部使用，亦可透過在訊息中輸入 `@general` 來呼叫。
 

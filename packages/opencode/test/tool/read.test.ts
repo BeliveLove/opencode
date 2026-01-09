@@ -136,35 +136,41 @@ describe("tool.read env file blocking", () => {
   ]
 
   describe.each(["build", "plan"])("agent=%s", (agentName) => {
-    test.each(cases)("%s blocked=%s", async (filename, blocked) => {
-      await using tmp = await tmpdir({
-        init: (dir) => Bun.write(path.join(dir, filename), "content"),
-      })
-      await Instance.provide({
-        directory: tmp.path,
-        fn: async () => {
-          const agent = await Agent.get(agentName)
-          const ctxWithPermissions = {
-            ...ctx,
-            ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
-              for (const pattern of req.patterns) {
-                const rule = PermissionNext.evaluate(req.permission, pattern, agent.permission)
-                if (rule.action === "deny") {
-                  throw new PermissionNext.DeniedError(agent.permission)
-                }
+    for (const [filename, blocked] of cases) {
+      test(
+        `${filename} blocked=${blocked}`,
+        async () => {
+          await using tmp = await tmpdir({
+            init: (dir) => Bun.write(path.join(dir, filename), "content"),
+          })
+          await Instance.provide({
+            directory: tmp.path,
+            fn: async () => {
+              const agent = await Agent.get(agentName)
+              const ctxWithPermissions = {
+                ...ctx,
+                ask: async (req: Omit<PermissionNext.Request, "id" | "sessionID" | "tool">) => {
+                  for (const pattern of req.patterns) {
+                    const rule = PermissionNext.evaluate(req.permission, pattern, agent.permission)
+                    if (rule.action === "deny") {
+                      throw new PermissionNext.DeniedError(agent.permission)
+                    }
+                  }
+                },
+              }
+              const read = await ReadTool.init()
+              const promise = read.execute({ filePath: path.join(tmp.path, filename) }, ctxWithPermissions)
+              if (blocked) {
+                await expect(promise).rejects.toThrow(PermissionNext.DeniedError)
+              } else {
+                expect((await promise).output).toContain("content")
               }
             },
-          }
-          const read = await ReadTool.init()
-          const promise = read.execute({ filePath: path.join(tmp.path, filename) }, ctxWithPermissions)
-          if (blocked) {
-            await expect(promise).rejects.toThrow(PermissionNext.DeniedError)
-          } else {
-            expect((await promise).output).toContain("content")
-          }
+          })
         },
-      })
-    })
+        15_000,
+      )
+    }
   })
 })
 

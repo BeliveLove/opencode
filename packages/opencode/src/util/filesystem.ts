@@ -1,6 +1,6 @@
 import { realpathSync } from "fs"
 import { exists } from "fs/promises"
-import { dirname, join, relative } from "path"
+import { dirname, isAbsolute, join, relative } from "path"
 
 export namespace Filesystem {
   /**
@@ -23,7 +23,13 @@ export namespace Filesystem {
   }
 
   export function contains(parent: string, child: string) {
-    return !relative(parent, child).startsWith("..")
+    const rel = relative(parent, child)
+    // On Windows, path.relative() returns an absolute path when drives differ (e.g. C:\ -> D:\),
+    // which should never be considered "contained".
+    if (!rel) return true
+    if (rel.startsWith("..")) return false
+    if (isAbsolute(rel)) return false
+    return true
   }
 
   export async function findUp(target: string, start: string, stop?: string) {

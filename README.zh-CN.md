@@ -71,13 +71,15 @@ XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
 
 ### Agents
 
-OpenCode 内置两种 Agent，可用 `Tab` 键快速切换：
+OpenCode 内置多种 Agent，可用 `Tab` 键快速切换：
 
 - **build** - 默认模式，具备完整权限，适合开发工作
 - **plan** - 只读模式，适合代码分析与探索
   - 默认拒绝修改文件
   - 运行 bash 命令前会询问
   - 便于探索未知代码库或规划改动
+- **doc** - 文档写作与维护（README、指南等）
+- **novel** - 小说/剧情写作（续写、改写、保持设定一致）
 
 另外还包含一个 **general** 子 Agent，用于复杂搜索和多步任务，内部使用，也可在消息中输入 `@general` 调用。
 

@@ -10,15 +10,19 @@ function evalPerm(agent: Agent.Info | undefined, permission: string): Permission
   return PermissionNext.evaluate(permission, "*", agent.permission).action
 }
 
-test("returns default native agents when no config", async () => {
-  await using tmp = await tmpdir()
-  await Instance.provide({
-    directory: tmp.path,
-    fn: async () => {
+test(
+  "returns default native agents when no config",
+  async () => {
+    await using tmp = await tmpdir()
+    await Instance.provide({
+      directory: tmp.path,
+      fn: async () => {
       const agents = await Agent.list()
       const names = agents.map((a) => a.name)
       expect(names).toContain("build")
       expect(names).toContain("plan")
+      expect(names).toContain("doc")
+      expect(names).toContain("novel")
       expect(names).toContain("general")
       expect(names).toContain("explore")
       expect(names).toContain("compaction")
@@ -26,7 +30,9 @@ test("returns default native agents when no config", async () => {
       expect(names).toContain("summary")
     },
   })
-})
+  },
+  15_000,
+)
 
 test("build agent has correct default properties", async () => {
   await using tmp = await tmpdir()

@@ -8,7 +8,9 @@ import { Truncate } from "../tool/truncation"
 
 import PROMPT_GENERATE from "./generate.txt"
 import PROMPT_COMPACTION from "./prompt/compaction.txt"
+import PROMPT_DOC from "./prompt/doc.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
+import PROMPT_NOVEL from "./prompt/novel.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
 import { PermissionNext } from "@/permission/next"
@@ -91,6 +93,38 @@ export namespace Agent {
           user,
         ),
         mode: "primary",
+        native: true,
+      },
+      doc: {
+        name: "doc",
+        description: `Documentation-focused agent for writing, updating, and improving project docs (READMEs, guides, inline docs).`,
+        prompt: PROMPT_DOC,
+        temperature: 0.2,
+        options: {},
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+          }),
+          user,
+        ),
+        mode: "all",
+        native: true,
+      },
+      novel: {
+        name: "novel",
+        description: `Creative writing agent for drafting fiction, keeping tone/POV consistent, and maintaining continuity.`,
+        prompt: PROMPT_NOVEL,
+        temperature: 0.9,
+        options: {},
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+          }),
+          user,
+        ),
+        mode: "all",
         native: true,
       },
       general: {
