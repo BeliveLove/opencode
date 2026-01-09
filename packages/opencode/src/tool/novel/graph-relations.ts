@@ -12,7 +12,7 @@ export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
   description: DESCRIPTION,
   parameters: z.object({}),
   async execute(_params, ctx) {
-    await askReadPattern(ctx, "novel/canon/{characters,factions}.y*ml", { scope: "novel/canon/relations" })
+    await askReadPattern(ctx, "novel/canon/*", { scope: "novel/canon" })
 
     const characters = await readCanon(CanonKind.characters)
     const factions = await readCanon(CanonKind.factions)
@@ -69,4 +69,3 @@ export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
     }
   },
 })
-

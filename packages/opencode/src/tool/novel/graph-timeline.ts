@@ -8,7 +8,7 @@ export const NovelGraphTimelineTool = Tool.define("novel.graph.timeline", {
   description: DESCRIPTION,
   parameters: z.object({}),
   async execute(_params, ctx) {
-    await askReadPattern(ctx, "novel/canon/timeline.y*ml", { scope: "novel/canon/timeline" })
+    await askReadPattern(ctx, "novel/canon/*", { scope: "novel/canon" })
     const events = await readCanon(CanonKind.timeline)
     const sorted = [...events].sort(
       (a, b) => (a.at ?? "").toString().localeCompare((b.at ?? "").toString()) || a.id.localeCompare(b.id),
@@ -34,4 +34,3 @@ export const NovelGraphTimelineTool = Tool.define("novel.graph.timeline", {
     }
   },
 })
-
