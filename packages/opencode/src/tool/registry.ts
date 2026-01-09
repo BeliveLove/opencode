@@ -11,6 +11,9 @@ import { WebFetchTool } from "./webfetch"
 import { WriteTool } from "./write"
 import { InvalidTool } from "./invalid"
 import { SkillTool } from "./skill"
+import { DocImportTool } from "./doc/import"
+import { DocRedactTool } from "./doc/redact"
+import { DocTemplateRenderTool } from "./doc/template-render"
 import { NovelFsReadTool } from "./novel/fs-read"
 import { NovelFsWriteTool } from "./novel/fs-write"
 import { NovelFsDiffTool } from "./novel/fs-diff"
@@ -121,6 +124,9 @@ export namespace ToolRegistry {
       WebSearchTool,
       CodeSearchTool,
       SkillTool,
+      DocImportTool,
+      DocRedactTool,
+      DocTemplateRenderTool,
       NovelFsReadTool,
       NovelFsWriteTool,
       NovelFsDiffTool,

@@ -1,0 +1,4 @@
+Redact sensitive information in plain text/Markdown.
+
+This tool is deterministic and intended for pre-export safety checks.
+It returns the redacted text and a structured report of what was matched.

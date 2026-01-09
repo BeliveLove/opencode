@@ -1,0 +1,9 @@
+Import a document file and extract readable text (or attach PDF).
+
+Supported inputs:
+- .md, .txt: read as text
+- .docx, .pptx, .xlsx: extract text from OOXML (zip) containers (best-effort; formatting not preserved)
+- .pdf: returned as an attachment (text extraction not performed)
+
+Not supported:
+- legacy binary formats (.doc, .xls, .ppt)
