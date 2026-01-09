@@ -13,7 +13,7 @@ export const NovelFsDiffTool = Tool.define("novel.fs.diff", {
     aRef: z.string().optional().describe("Git ref (default: HEAD)"),
     bRef: z.string().optional().describe("Git ref or WORKTREE (default: WORKTREE)"),
   }),
-  async execute(params) {
+  async execute(params, _ctx) {
     await requireGitRepo()
     const resolved = resolveNovelPath(params.path)
     const aRef = normalizeRef(params.aRef, "HEAD")
@@ -57,4 +57,3 @@ export const NovelFsDiffTool = Tool.define("novel.fs.diff", {
     }
   },
 })
-

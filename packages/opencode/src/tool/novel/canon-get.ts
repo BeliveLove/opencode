@@ -10,7 +10,7 @@ export const NovelCanonGetTool = Tool.define("novel.canon.get", {
     kind: z.enum(CANON_KINDS as [CanonKind, ...CanonKind[]]).describe("Canon kind"),
     id: z.string().describe("Canonical id (e.g. CHAR_LIN_QINGHE)"),
   }),
-  async execute(params) {
+  async execute(params, _ctx) {
     const items = await readCanon(params.kind)
     const found = items.find((x) => x.id === params.id)
     return {
@@ -20,4 +20,3 @@ export const NovelCanonGetTool = Tool.define("novel.canon.get", {
     }
   },
 })
-

@@ -16,7 +16,7 @@ export const NovelCanonSearchTool = Tool.define("novel.canon.search", {
     query: z.string().describe("Search query"),
     limit: z.number().int().min(1).max(50).default(10),
   }),
-  async execute(params) {
+  async execute(params, _ctx) {
     const q = params.query.trim().toLowerCase()
     const items = await readCanon(params.kind)
 
@@ -37,4 +37,3 @@ export const NovelCanonSearchTool = Tool.define("novel.canon.search", {
     }
   },
 })
-

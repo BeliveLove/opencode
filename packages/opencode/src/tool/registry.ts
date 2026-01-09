@@ -103,7 +103,7 @@ export namespace ToolRegistry {
     const custom = await state().then((x) => x.custom)
     const config = await Config.get()
 
-    return [
+    const tools: Tool.Info[] = [
       InvalidTool,
       ...(Flag.OPENCODE_CLIENT === "cli" ? [QuestionTool] : []),
       BashTool,
@@ -135,6 +135,11 @@ export namespace ToolRegistry {
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
       ...custom,
     ]
+
+    // De-duplicate by id (prefer later tools, e.g. custom overrides built-ins)
+    const unique = new Map<string, Tool.Info>()
+    for (const tool of tools) unique.set(tool.id, tool)
+    return Array.from(unique.values())
   }
 
   export async function ids() {

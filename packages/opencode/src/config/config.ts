@@ -123,9 +123,10 @@ export namespace Config {
         }
       }
 
-      const exists = existsSync(path.join(dir, "node_modules"))
-      const installing = installDependencies(dir)
-      if (!exists) await installing
+      const hasNodeModules = existsSync(path.join(dir, "node_modules"))
+      if (!hasNodeModules) {
+        await installDependencies(dir)
+      }
 
       result.command = mergeDeep(result.command ?? {}, await loadCommand(dir))
       result.agent = mergeDeep(result.agent, await loadAgent(dir))

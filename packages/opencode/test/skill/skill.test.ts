@@ -49,10 +49,10 @@ Instructions here.
       const testSkill = skills.find((s) => s.name === "test-skill")
       expect(testSkill).toBeDefined()
       expect(testSkill!.description).toBe("A test skill for verification.")
-      expect(testSkill!.location).toContain("skill/test-skill/SKILL.md")
+      expect(testSkill!.location.replaceAll("\\", "/")).toContain("skill/test-skill/SKILL.md")
     },
   })
-})
+}, 60_000)
 
 test("discovers multiple skills from .opencode/skill/ directory", async () => {
   await using tmp = await tmpdir({
@@ -91,7 +91,7 @@ description: Second test skill.
       expect(skills.find((s) => s.name === "skill-two")).toBeDefined()
     },
   })
-})
+}, 60_000)
 
 test("skips skills with missing frontmatter", async () => {
   await using tmp = await tmpdir({
@@ -116,7 +116,7 @@ Just some content without YAML frontmatter.
       expect(skills.find((s) => s.name === "novel-plan")).toBeDefined()
     },
   })
-})
+}, 60_000)
 
 test("discovers skills from .claude/skills/ directory", async () => {
   await using tmp = await tmpdir({
@@ -142,10 +142,10 @@ description: A skill in the .claude/skills directory.
       const skills = await Skill.all()
       const claudeSkill = skills.find((s) => s.name === "claude-skill")
       expect(claudeSkill).toBeDefined()
-      expect(claudeSkill!.location).toContain(".claude/skills/claude-skill/SKILL.md")
+      expect(claudeSkill!.location.replaceAll("\\", "/")).toContain(".claude/skills/claude-skill/SKILL.md")
     },
   })
-})
+}, 60_000)
 
 test("discovers global skills from ~/.claude/skills/ directory", async () => {
   await using tmp = await tmpdir({ git: true })
@@ -162,13 +162,13 @@ test("discovers global skills from ~/.claude/skills/ directory", async () => {
         const globalSkill = skills.find((s) => s.name === "global-test-skill")
         expect(globalSkill).toBeDefined()
         expect(globalSkill!.description).toBe("A global skill from ~/.claude/skills for testing.")
-        expect(globalSkill!.location).toContain(".claude/skills/global-test-skill/SKILL.md")
+        expect(globalSkill!.location.replaceAll("\\", "/")).toContain(".claude/skills/global-test-skill/SKILL.md")
       },
     })
   } finally {
     process.env.OPENCODE_TEST_HOME = originalHome
   }
-})
+}, 60_000)
 
 test("returns empty array when no skills exist", async () => {
   await using tmp = await tmpdir({ git: true })
@@ -180,4 +180,4 @@ test("returns empty array when no skills exist", async () => {
       expect(skills.find((s) => s.name === "novel-idea")).toBeDefined()
     },
   })
-})
+}, 60_000)

@@ -29,7 +29,7 @@ export const NovelFsWriteTool = Tool.define("novel.fs.write", {
       return {
         title: resolved.relToProjectPosix,
         output: `skipped (already exists): ${resolved.relToProjectPosix}`,
-        metadata: { path: resolved.relToProjectPosix, skipped: true },
+        metadata: { path: resolved.relToProjectPosix, mode: "create", skipped: true, created: false },
       }
     }
 
@@ -47,7 +47,7 @@ export const NovelFsWriteTool = Tool.define("novel.fs.write", {
       return {
         title: resolved.relToProjectPosix,
         output: `appended: ${resolved.relToProjectPosix}`,
-        metadata: { path: resolved.relToProjectPosix, mode: "append" },
+        metadata: { path: resolved.relToProjectPosix, mode: "append", skipped: false, created: !exists },
       }
     }
 
@@ -55,8 +55,7 @@ export const NovelFsWriteTool = Tool.define("novel.fs.write", {
     return {
       title: resolved.relToProjectPosix,
       output: exists ? `wrote: ${resolved.relToProjectPosix}` : `created: ${resolved.relToProjectPosix}`,
-      metadata: { path: resolved.relToProjectPosix, mode: params.mode, created: !exists },
+      metadata: { path: resolved.relToProjectPosix, mode: params.mode, skipped: false, created: !exists },
     }
   },
 })
-
