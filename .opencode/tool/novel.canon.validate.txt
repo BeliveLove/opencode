@@ -1,0 +1,10 @@
+Validate canon and (optionally) a chapter's references.
+
+Checks:
+- ID prefixes per kind (CHAR_/ORG_/RULE_/EVT_/FB_)
+- Minimal required fields (best-effort)
+- Foreshadow status machine (planted/escalated/paid_off/dropped)
+- If `chapterId` is provided: all referenced IDs exist in canon
+
+Returns a YAML report with errors and warnings.
+

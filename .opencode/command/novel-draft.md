@@ -1,0 +1,19 @@
+---
+description: 按场景卡产出正文并写入 chapters/
+---
+
+先调用 `skill` 工具加载 `novel-draft`，并严格按技能契约输出。
+
+目标章节（必须是 CH_*）：
+
+$ARGUMENTS
+
+执行步骤：
+
+1) 读取 `outlines/<CH>.outline.md` 与 `canon/`（用 `novel.fs.read`）。
+2) 生成该章正文：
+   - 章首必须包含 YAML frontmatter（参考文档字段：id/title/pov/time_anchor/locations/participants/refs/status）
+   - 每个场景标题必须是 `## SC_<章节ID>_<序号> ...`
+   - 在涉及设定/人物/伏笔时，尽量使用 `[REF: ...]` 标注可追溯 ID
+3) 写入 `chapters/<CH>.md`（用 `novel.fs.write`，`mode=overwrite`）。
+

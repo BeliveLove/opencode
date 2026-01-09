@@ -1,0 +1,4 @@
+Search canon items by keyword (simple text match).
+
+Returns a small list of best-effort matches (id + label if present).
+

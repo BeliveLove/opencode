@@ -1,0 +1,4 @@
+Render a Mermaid timeline/graph from canon timeline events.
+
+This is a lightweight visualization for manual review.
+

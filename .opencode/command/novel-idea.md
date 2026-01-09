@@ -1,0 +1,20 @@
+---
+description: 生成题材/设定草案并写入 notes/ideas.md
+---
+
+先调用 `skill` 工具加载 `novel-idea`，并严格按技能契约输出。
+
+输入（来自用户参数）：
+
+$ARGUMENTS
+
+输出要求：
+
+1) 必须包含一个结构化块（YAML），至少给出：
+   - `premise`（一句话前提）
+   - `tone`（风格关键词数组）
+   - `canon_drafts`（按 kind 分组的条目草案：characters/factions/rules/timeline/foreshadow/glossary）
+2) 生成的正文说明与结构化块一起，追加写入 `notes/ideas.md`（使用 `novel.fs.write`，`mode=append`）。
+
+注意：此命令只写入 `notes/ideas.md`，不要直接修改 `canon/`（写回由 `novel-check --apply` 负责）。
+
