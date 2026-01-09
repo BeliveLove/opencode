@@ -64,6 +64,20 @@ function normalizeGitBashPath(p: string) {
   return p
 }
 
+function errorMessage(error: unknown) {
+  if (!error) return ""
+  if (typeof error === "string") return error
+  if (typeof error === "object" && "message" in error) {
+    const msg = (error as any).message
+    if (typeof msg === "string") return msg
+  }
+  try {
+    return JSON.stringify(error)
+  } catch {
+    return String(error)
+  }
+}
+
 // TODO: we may wanna rename this tool so it works better on other shells
 export const BashTool = Tool.define("bash", async () => {
   const shell = Shell.acceptable()
@@ -205,7 +219,7 @@ export const BashTool = Tool.define("bash", async () => {
       let timedOut = false
       let aborted = false
       let exited = false
-      let procError: Error | null = null
+      let procError: unknown = null
 
       const kill = () => Shell.killTree(proc, { exited: () => exited })
 
@@ -261,7 +275,7 @@ export const BashTool = Tool.define("bash", async () => {
       }
 
       if (procError) {
-        output += `\n\n<bash_error>\n${procError.message}\n</bash_error>`
+        output += `\n\n<bash_error>\n${errorMessage(procError)}\n</bash_error>`
       }
 
       return {
