@@ -14,4 +14,3 @@ $ARGUMENTS
 
 - 场景卡必须使用 `SC_<章节ID>_<序号>`。
 - 必须明确列出每个场景的信息投放（refs：RULE_/FB_/CHAR_/ORG_/LOC_/ITEM_）。
-

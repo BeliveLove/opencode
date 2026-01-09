@@ -1,11 +1,13 @@
 import fs from "fs/promises"
 import path from "path"
 import YAML from "yaml"
-import { novelRoot } from "./paths"
+import { resolveNovelPath } from "./paths"
 
 export const CanonKind = {
   characters: "characters",
   factions: "factions",
+  relations: "relations",
+  arcs: "arcs",
   rules: "rules",
   timeline: "timeline",
   foreshadow: "foreshadow",
@@ -17,14 +19,16 @@ export type CanonKind = (typeof CanonKind)[keyof typeof CanonKind]
 export const CANON_KINDS: CanonKind[] = [
   CanonKind.characters,
   CanonKind.factions,
+  CanonKind.relations,
+  CanonKind.arcs,
   CanonKind.rules,
   CanonKind.timeline,
   CanonKind.foreshadow,
   CanonKind.glossary,
 ]
 
-export function canonFile(kind: CanonKind) {
-  return path.join(novelRoot(), "canon", `${kind}.yml`)
+export async function canonFile(kind: CanonKind, options: { novelId?: string } = {}) {
+  return resolveNovelPath(path.posix.join("canon", `${kind}.yml`), options)
 }
 
 export type CanonItem = Record<string, any> & { id: string }
@@ -42,9 +46,9 @@ function ensureYamlList(value: unknown, kind: CanonKind): CanonItem[] {
   return items as CanonItem[]
 }
 
-export async function readCanon(kind: CanonKind): Promise<CanonItem[]> {
-  const file = canonFile(kind)
-  const content = await fs.readFile(file, "utf8").catch((err) => {
+export async function readCanon(kind: CanonKind, options: { novelId?: string } = {}): Promise<CanonItem[]> {
+  const file = await canonFile(kind, options)
+  const content = await fs.readFile(file.abs, "utf8").catch((err) => {
     if ((err as any)?.code === "ENOENT") return ""
     throw err
   })
@@ -53,11 +57,11 @@ export async function readCanon(kind: CanonKind): Promise<CanonItem[]> {
   return ensureYamlList(parsed, kind)
 }
 
-export async function writeCanon(kind: CanonKind, items: CanonItem[]) {
-  const file = canonFile(kind)
-  await fs.mkdir(path.dirname(file), { recursive: true })
+export async function writeCanon(kind: CanonKind, items: CanonItem[], options: { novelId?: string } = {}) {
+  const file = await canonFile(kind, options)
+  await fs.mkdir(path.dirname(file.abs), { recursive: true })
   const yaml = YAML.stringify(items).trimEnd() + "\n"
-  await fs.writeFile(file, yaml, "utf8")
+  await fs.writeFile(file.abs, yaml, "utf8")
 }
 
 export function canonIdPrefix(kind: CanonKind) {
@@ -66,6 +70,10 @@ export function canonIdPrefix(kind: CanonKind) {
       return "CHAR_"
     case CanonKind.factions:
       return "ORG_"
+    case CanonKind.relations:
+      return "" // allow flexible schemas/ids for now
+    case CanonKind.arcs:
+      return "" // allow flexible schemas/ids for now
     case CanonKind.rules:
       return "RULE_"
     case CanonKind.timeline:
@@ -77,8 +85,7 @@ export function canonIdPrefix(kind: CanonKind) {
   }
 }
 
-export async function readAllCanon(): Promise<Record<CanonKind, CanonItem[]>> {
-  const entries = await Promise.all(CANON_KINDS.map(async (k) => [k, await readCanon(k)] as const))
+export async function readAllCanon(options: { novelId?: string } = {}): Promise<Record<CanonKind, CanonItem[]>> {
+  const entries = await Promise.all(CANON_KINDS.map(async (k) => [k, await readCanon(k, options)] as const))
   return Object.fromEntries(entries) as Record<CanonKind, CanonItem[]>
 }
-

@@ -169,11 +169,16 @@ export namespace Project {
       }
     })
 
+    const normalizedSandbox = Filesystem.normalizePath(sandbox)
+    const normalizedWorktree = Filesystem.normalizePath(
+      path.isAbsolute(worktree) ? worktree : path.resolve(normalizedSandbox, worktree),
+    )
+
     let existing = await Storage.read<Info>(["project", id]).catch(() => undefined)
     if (!existing) {
       existing = {
         id,
-        worktree,
+        worktree: normalizedWorktree,
         vcs: vcs as Info["vcs"],
         sandboxes: [],
         time: {
@@ -182,7 +187,7 @@ export namespace Project {
         },
       }
       if (id !== "global") {
-        await migrateFromGlobal(id, worktree)
+        await migrateFromGlobal(id, normalizedWorktree)
       }
     }
 
@@ -192,14 +197,14 @@ export namespace Project {
     if (Flag.OPENCODE_EXPERIMENTAL_ICON_DISCOVERY) discover(existing)
     const result: Info = {
       ...existing,
-      worktree,
+      worktree: normalizedWorktree,
       vcs: vcs as Info["vcs"],
       time: {
         ...existing.time,
         updated: Date.now(),
       },
     }
-    if (sandbox !== result.worktree && !result.sandboxes.includes(sandbox)) result.sandboxes.push(sandbox)
+    if (normalizedSandbox !== result.worktree && !result.sandboxes.includes(normalizedSandbox)) result.sandboxes.push(normalizedSandbox)
     result.sandboxes = result.sandboxes.filter((x) => existsSync(x))
     await Storage.write<Info>(["project", id], result)
     GlobalBus.emit("event", {
@@ -208,7 +213,7 @@ export namespace Project {
         properties: result,
       },
     })
-    return { project: result, sandbox }
+    return { project: result, sandbox: normalizedSandbox }
   }
 
   export async function discover(input: Info) {

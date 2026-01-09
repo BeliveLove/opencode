@@ -2,6 +2,7 @@ import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./graph-relations.txt"
 import { CanonKind, readCanon } from "../../novel/canon"
+import { resolveNovelDir } from "../../novel/paths"
 import { askReadPattern } from "./util"
 
 function labelNode(id: string, name?: string) {
@@ -10,12 +11,17 @@ function labelNode(id: string, name?: string) {
 
 export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
   description: DESCRIPTION,
-  parameters: z.object({}),
-  async execute(_params, ctx) {
-    await askReadPattern(ctx, "novel/canon/*", { scope: "novel/canon" })
+  parameters: z.object({
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
+  }),
+  async execute(params, ctx) {
+    const dir = await resolveNovelDir({ novelId: params.novelId })
+    await askReadPattern(ctx, `${dir.relToProjectPosix}/canon/*`, { scope: `${dir.relToProjectPosix}/canon` })
 
-    const characters = await readCanon(CanonKind.characters)
-    const factions = await readCanon(CanonKind.factions)
+    const options = { novelId: params.novelId }
+    const characters = await readCanon(CanonKind.characters, options)
+    const factions = await readCanon(CanonKind.factions, options)
+    const relations = await readCanon(CanonKind.relations, options).catch(() => [])
 
     const charNodes = new Map<string, string>()
     for (const c of characters) charNodes.set(c.id, labelNode(c.id, c.name))
@@ -24,24 +30,48 @@ export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
     for (const o of factions) orgNodes.set(o.id, labelNode(o.id, o.name))
 
     const charEdges: string[] = []
-    for (const c of characters) {
-      const rels = Array.isArray((c as any).relations) ? (c as any).relations : []
-      for (const r of rels) {
-        const to = r?.to
-        const type = r?.type ?? "related"
-        if (typeof to !== "string" || !to) continue
-        charEdges.push(`  ${c.id} -->|${type}| ${to}`)
-      }
+    const orgEdges: string[] = []
+
+    const addNodeIfMissing = (id: string) => {
+      if (id.startsWith("CHAR_") && !charNodes.has(id)) charNodes.set(id, id)
+      if (id.startsWith("ORG_") && !orgNodes.has(id)) orgNodes.set(id, id)
     }
 
-    const orgEdges: string[] = []
-    for (const o of factions) {
-      const rels = Array.isArray((o as any).relations) ? (o as any).relations : []
-      for (const r of rels) {
-        const to = r?.to
-        const type = r?.type ?? "related"
-        if (typeof to !== "string" || !to) continue
-        orgEdges.push(`  ${o.id} -->|${type}| ${to}`)
+    const addEdge = (from: string, to: string, type: string) => {
+      addNodeIfMissing(from)
+      addNodeIfMissing(to)
+      if (from.startsWith("CHAR_")) charEdges.push(`  ${from} -->|${type}| ${to}`)
+      if (from.startsWith("ORG_")) orgEdges.push(`  ${from} -->|${type}| ${to}`)
+    }
+
+    const parsedAnyRelations = relations.length > 0
+    if (parsedAnyRelations) {
+      for (const r of relations as any[]) {
+        const from = (r?.from ?? r?.a ?? r?.source ?? "").toString().trim()
+        const to = (r?.to ?? r?.b ?? r?.target ?? "").toString().trim()
+        const type = (r?.type ?? r?.relation ?? "related").toString().trim() || "related"
+        if (!from || !to) continue
+        addEdge(from, to, type)
+      }
+    } else {
+      // Backward compatibility: relations embedded in characters/factions
+      for (const c of characters) {
+        const rels = Array.isArray((c as any).relations) ? (c as any).relations : []
+        for (const r of rels) {
+          const to = r?.to
+          const type = (r?.type ?? "related").toString()
+          if (typeof to !== "string" || !to) continue
+          addEdge(c.id, to, type)
+        }
+      }
+      for (const o of factions) {
+        const rels = Array.isArray((o as any).relations) ? (o as any).relations : []
+        for (const r of rels) {
+          const to = r?.to
+          const type = (r?.type ?? "related").toString()
+          if (typeof to !== "string" || !to) continue
+          addEdge(o.id, to, type)
+        }
       }
     }
 
@@ -65,7 +95,7 @@ export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
     return {
       title: "novel.graph.relations",
       output: lines.join("\n"),
-      metadata: { characterCount: characters.length, factionCount: factions.length },
+      metadata: { characterCount: characters.length, factionCount: factions.length, relationCount: charEdges.length + orgEdges.length },
     }
   },
 })

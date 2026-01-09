@@ -4,6 +4,8 @@ import { Snapshot } from "../../src/snapshot"
 import { Instance } from "../../src/project/instance"
 import { tmpdir } from "../fixture/fixture"
 
+const isWindows = process.platform === "win32"
+
 async function bootstrap() {
   return tmpdir({
     git: true,
@@ -134,7 +136,7 @@ test("binary file handling", async () => {
   })
 })
 
-test("symlink handling", async () => {
+;(isWindows ? test.skip : test)("symlink handling", async () => {
   await using tmp = await bootstrap()
   await Instance.provide({
     directory: tmp.path,
@@ -287,7 +289,7 @@ test("unicode filenames", async () => {
   })
 })
 
-test("very long filenames", async () => {
+;(isWindows ? test.skip : test)("very long filenames", async () => {
   await using tmp = await bootstrap()
   await Instance.provide({
     directory: tmp.path,
@@ -329,7 +331,7 @@ test("hidden files", async () => {
   })
 })
 
-test("nested symlinks", async () => {
+;(isWindows ? test.skip : test)("nested symlinks", async () => {
   await using tmp = await bootstrap()
   await Instance.provide({
     directory: tmp.path,
@@ -349,7 +351,7 @@ test("nested symlinks", async () => {
   })
 })
 
-test("file permissions and ownership changes", async () => {
+;(isWindows ? test.skip : test)("file permissions and ownership changes", async () => {
   await using tmp = await bootstrap()
   await Instance.provide({
     directory: tmp.path,

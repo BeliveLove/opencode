@@ -1,7 +1,6 @@
-将 `novel/chapters/` 下的章节导出为一本合并后的 Markdown。
+将当前小说（`novels/<active>/`）下的章节导出为一本合并后的 Markdown。
 
 执行：
 
-1) 调用 `novel.export`，输出默认写到 `novel/export/book.md`。
+1) 调用 `novel.export`，输出默认写到 `export/book.md`（相对于当前小说目录）。
 2) 输出导出结果的路径与章节数量。
-

@@ -1,0 +1,3 @@
+List novel projects under `novels/` and show the current active novel (from `novels/.active`).
+
+This is a lightweight helper for the `novel-list` / `novel-use` workflow.

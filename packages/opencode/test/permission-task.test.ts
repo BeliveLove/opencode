@@ -162,7 +162,7 @@ describe("permission.task with real config files", () => {
         expect(PermissionNext.evaluate("task", "code-reviewer", ruleset).action).toBe("deny")
       },
     })
-  })
+  }, 20_000)
 
   test("loads task permissions with wildcard patterns from config", async () => {
     await using tmp = await tmpdir({

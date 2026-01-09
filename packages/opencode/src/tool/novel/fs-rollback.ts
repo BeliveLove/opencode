@@ -17,12 +17,13 @@ async function gitShow(ref: string, relToProjectPosix: string) {
 export const NovelFsRollbackTool = Tool.define("novel.fs.rollback", {
   description: DESCRIPTION,
   parameters: z.object({
-    path: z.string().describe("Path relative to novel/"),
+    path: z.string().describe("Path relative to novel root"),
     ref: z.string().optional().describe("Git ref (default: HEAD)"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
     await requireGitRepo()
-    const resolved = resolveNovelPath(params.path)
+    const resolved = await resolveNovelPath(params.path, { novelId: params.novelId })
     const ref = normalizeRef(params.ref, "HEAD")
 
     const tracked = await isTracked(resolved.relToProjectPosix)
@@ -49,4 +50,3 @@ export const NovelFsRollbackTool = Tool.define("novel.fs.rollback", {
     }
   },
 })
-

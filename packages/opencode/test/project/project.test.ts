@@ -5,6 +5,7 @@ import { Storage } from "../../src/storage/storage"
 import { $ } from "bun"
 import path from "path"
 import { tmpdir } from "../fixture/fixture"
+import fs from "fs/promises"
 
 Log.init({ print: false })
 
@@ -55,7 +56,8 @@ describe("Project.fromDirectory with worktrees", () => {
   test("should set worktree to root when called from a worktree", async () => {
     await using tmp = await tmpdir({ git: true })
 
-    const worktreePath = path.join(tmp.path, "..", "worktree-test")
+    const worktreePath = path.join(tmp.path, "..", `worktree-test-${Math.random().toString(36).slice(2)}`)
+    await fs.rm(worktreePath, { recursive: true, force: true }).catch(() => {})
     await $`git worktree add ${worktreePath} -b test-branch`.cwd(tmp.path).quiet()
 
     const { project, sandbox } = await Project.fromDirectory(worktreePath)
@@ -66,13 +68,17 @@ describe("Project.fromDirectory with worktrees", () => {
     expect(project.sandboxes).not.toContain(tmp.path)
 
     await $`git worktree remove ${worktreePath}`.cwd(tmp.path).quiet()
+    await fs.rm(worktreePath, { recursive: true, force: true }).catch(() => {})
   })
 
   test("should accumulate multiple worktrees in sandboxes", async () => {
     await using tmp = await tmpdir({ git: true })
 
-    const worktree1 = path.join(tmp.path, "..", "worktree-1")
-    const worktree2 = path.join(tmp.path, "..", "worktree-2")
+    const suffix = Math.random().toString(36).slice(2)
+    const worktree1 = path.join(tmp.path, "..", `worktree-1-${suffix}`)
+    const worktree2 = path.join(tmp.path, "..", `worktree-2-${suffix}`)
+    await fs.rm(worktree1, { recursive: true, force: true }).catch(() => {})
+    await fs.rm(worktree2, { recursive: true, force: true }).catch(() => {})
     await $`git worktree add ${worktree1} -b branch-1`.cwd(tmp.path).quiet()
     await $`git worktree add ${worktree2} -b branch-2`.cwd(tmp.path).quiet()
 
@@ -86,6 +92,8 @@ describe("Project.fromDirectory with worktrees", () => {
 
     await $`git worktree remove ${worktree1}`.cwd(tmp.path).quiet()
     await $`git worktree remove ${worktree2}`.cwd(tmp.path).quiet()
+    await fs.rm(worktree1, { recursive: true, force: true }).catch(() => {})
+    await fs.rm(worktree2, { recursive: true, force: true }).catch(() => {})
   })
 })
 

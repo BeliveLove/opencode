@@ -1,9 +1,8 @@
-Write a file inside `novel/`.
+Write a file inside the current novel directory (`novels/<active>/` or legacy `novel/`).
 
-The `path` parameter is relative to `novel/` (e.g. `canon/characters.yml`).
+The `path` parameter is relative to the novel root (e.g. `canon/characters.yml`).
 
 Modes:
 - `create`: do not overwrite existing files
 - `overwrite`: replace existing content
 - `append`: append to the end of the file
-

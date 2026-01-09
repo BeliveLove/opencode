@@ -15,10 +15,11 @@ export const NovelCanonSearchTool = Tool.define("novel.canon.search", {
     kind: z.enum(CANON_KINDS as [CanonKind, ...CanonKind[]]).describe("Canon kind"),
     query: z.string().describe("Search query"),
     limit: z.number().int().min(1).max(50).default(10),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, _ctx) {
     const q = params.query.trim().toLowerCase()
-    const items = await readCanon(params.kind)
+    const items = await readCanon(params.kind, { novelId: params.novelId })
 
     const hits: CanonSearchHit[] = []
     for (const item of items) {

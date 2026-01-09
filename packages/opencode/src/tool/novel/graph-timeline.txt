@@ -1,4 +1,3 @@
-Generate a Mermaid timeline graph from `novel/canon/timeline.yml`.
+Generate a Mermaid timeline graph from `canon/timeline.yml` (relative to the novel root).
 
 Returns Markdown containing a Mermaid `graph TD` diagram.
-

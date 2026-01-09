@@ -31,6 +31,7 @@ export const NovelCanonUpsertTool = Tool.define("novel.canon.upsert", {
       })
       .describe("Provenance info"),
     apply: z.boolean().default(false).describe("Apply changes to canon files"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
     assertObject(params.item)
@@ -44,7 +45,8 @@ export const NovelCanonUpsertTool = Tool.define("novel.canon.upsert", {
       throw new Error(`id 前缀不合法：kind=${params.kind} 期望 ${expectedPrefix}*，实际 ${id}`)
     }
 
-    const items = await readCanon(params.kind)
+    const options = { novelId: params.novelId }
+    const items = await readCanon(params.kind, options)
     const idx = items.findIndex((x) => x.id === id)
 
     const merged = (() => {
@@ -63,11 +65,12 @@ export const NovelCanonUpsertTool = Tool.define("novel.canon.upsert", {
     else nextItems.push(merged)
     nextItems.sort((a, b) => a.id.localeCompare(b.id))
 
-    const before = await fs.readFile(canonFile(params.kind), "utf8").catch(() => "")
+    const canonPath = await canonFile(params.kind, options)
+    const before = await fs.readFile(canonPath.abs, "utf8").catch(() => "")
     const after = YAML.stringify(nextItems).trimEnd() + "\n"
 
     const patch = unifiedDiff({
-      filePath: `novel/canon/${params.kind}.yml`,
+      filePath: canonPath.relToProjectPosix,
       before,
       after,
       fromLabel: "before",
@@ -75,15 +78,14 @@ export const NovelCanonUpsertTool = Tool.define("novel.canon.upsert", {
     }).trimEnd()
 
     if (params.apply) {
-      await askEdit(ctx, canonFile(params.kind), { filepath: canonFile(params.kind), diff: patch || "(no changes)" })
-      await writeCanon(params.kind, nextItems as any)
+      await askEdit(ctx, canonPath.abs, { filepath: canonPath.abs, diff: patch || "(no changes)" })
+      await writeCanon(params.kind, nextItems as any, options)
     }
 
     return {
-      title: `novel/canon/${params.kind}.yml`,
+      title: canonPath.relToProjectPosix,
       output: patch || "(no changes)",
       metadata: { kind: params.kind, id, applied: params.apply },
     }
   },
 })
-

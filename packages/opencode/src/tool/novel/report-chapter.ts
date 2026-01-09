@@ -6,7 +6,7 @@ import { Tool } from "../tool"
 import DESCRIPTION from "./report-chapter.txt"
 import { CANON_KINDS, readAllCanon } from "../../novel/canon"
 import { extractIdCandidates, extractRefIds, parseChapterMarkdown } from "../../novel/chapter"
-import { resolveNovelPath } from "../../novel/paths"
+import { resolveNovelDir, resolveNovelPath } from "../../novel/paths"
 import { askReadPattern } from "./util"
 
 function groupByPrefix(ids: string[]) {
@@ -24,16 +24,20 @@ export const NovelReportChapterTool = Tool.define("novel.report.chapter", {
   description: DESCRIPTION,
   parameters: z.object({
     chapterId: z.string().describe("Chapter id (e.g. CH_01_003)"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
-    await askReadPattern(ctx, "novel/canon/*", { scope: "novel/canon" })
-    await askReadPattern(ctx, `novel/chapters/${params.chapterId}.md`, { scope: "novel/chapters" })
+    const dir = await resolveNovelDir({ novelId: params.novelId })
+    await askReadPattern(ctx, path.posix.join(dir.relToProjectPosix, "canon/*"), { scope: path.posix.join(dir.relToProjectPosix, "canon") })
+    await askReadPattern(ctx, path.posix.join(dir.relToProjectPosix, `chapters/${params.chapterId}.md`), {
+      scope: path.posix.join(dir.relToProjectPosix, "chapters"),
+    })
 
-    const all = await readAllCanon()
+    const all = await readAllCanon({ novelId: params.novelId })
     const allIds = new Set<string>()
     for (const kind of CANON_KINDS) for (const item of all[kind]) allIds.add(item.id)
 
-    const chapterPath = resolveNovelPath(path.join("chapters", `${params.chapterId}.md`))
+    const chapterPath = await resolveNovelPath(path.join("chapters", `${params.chapterId}.md`), { novelId: params.novelId })
     const chapterContent = await fs.readFile(chapterPath.abs, "utf8")
     const parsed = parseChapterMarkdown(chapterContent)
 
@@ -74,4 +78,3 @@ export const NovelReportChapterTool = Tool.define("novel.report.chapter", {
     }
   },
 })
-

@@ -1,4 +1,3 @@
-Rollback a file inside `novel/` to a git ref (default: HEAD).
+Rollback a file inside the current novel directory to a git ref (default: HEAD).
 
 This uses `git restore` (or `git checkout` as a fallback).
-

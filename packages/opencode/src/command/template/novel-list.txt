@@ -1,0 +1,8 @@
+列出当前项目下的小说工程（`novels/<novel_id>/`），并展示当前 active（来自 `novels/.active`）。
+
+执行：
+
+1) 调用 `novel.project.list`。
+2) 将结果用简短要点总结给用户：
+   - active 是什么（若为空，提示运行 `novel-use <novel_id>`）
+   - 有哪些 novelId + title（若缺失 title 也要展示 novelId）

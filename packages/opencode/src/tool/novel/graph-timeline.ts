@@ -2,14 +2,18 @@ import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./graph-timeline.txt"
 import { CanonKind, readCanon } from "../../novel/canon"
+import { resolveNovelDir } from "../../novel/paths"
 import { askReadPattern } from "./util"
 
 export const NovelGraphTimelineTool = Tool.define("novel.graph.timeline", {
   description: DESCRIPTION,
-  parameters: z.object({}),
-  async execute(_params, ctx) {
-    await askReadPattern(ctx, "novel/canon/*", { scope: "novel/canon" })
-    const events = await readCanon(CanonKind.timeline)
+  parameters: z.object({
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
+  }),
+  async execute(params, ctx) {
+    const dir = await resolveNovelDir({ novelId: params.novelId })
+    await askReadPattern(ctx, `${dir.relToProjectPosix}/canon/*`, { scope: `${dir.relToProjectPosix}/canon` })
+    const events = await readCanon(CanonKind.timeline, { novelId: params.novelId })
     const sorted = [...events].sort(
       (a, b) => (a.at ?? "").toString().localeCompare((b.at ?? "").toString()) || a.id.localeCompare(b.id),
     )

@@ -11,12 +11,13 @@ import { trimDiff } from "../edit"
 export const NovelFsWriteTool = Tool.define("novel.fs.write", {
   description: DESCRIPTION,
   parameters: z.object({
-    path: z.string().describe("Path relative to novel/ (e.g. canon/characters.yml)"),
+    path: z.string().describe("Path relative to novel root (e.g. canon/characters.yml)"),
     content: z.string().describe("File content to write"),
     mode: z.enum(["create", "overwrite", "append"]).default("overwrite"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
-    const resolved = resolveNovelPath(params.path)
+    const resolved = await resolveNovelPath(params.path, { novelId: params.novelId })
     await fs.mkdir(path.dirname(resolved.abs), { recursive: true })
 
     const exists = await fs

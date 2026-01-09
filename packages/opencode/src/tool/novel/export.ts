@@ -3,7 +3,7 @@ import path from "path"
 import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./export.txt"
-import { novelRoot, resolveNovelPath } from "../../novel/paths"
+import { resolveNovelDir, resolveNovelPath } from "../../novel/paths"
 import { askEdit } from "./util"
 
 function isChapterFile(name: string) {
@@ -13,10 +13,12 @@ function isChapterFile(name: string) {
 export const NovelExportTool = Tool.define("novel.export", {
   description: DESCRIPTION,
   parameters: z.object({
-    output: z.string().default("export/book.md").describe("Output path relative to novel/"),
+    output: z.string().default("export/book.md").describe("Output path relative to novel root"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
-    const chaptersDir = path.join(novelRoot(), "chapters")
+    const dir = await resolveNovelDir({ novelId: params.novelId })
+    const chaptersDir = path.join(dir.abs, "chapters")
     const entries = await fs.readdir(chaptersDir, { withFileTypes: true }).catch(() => [])
     const files = entries
       .filter((e) => e.isFile())
@@ -31,7 +33,7 @@ export const NovelExportTool = Tool.define("novel.export", {
       parts.push(content.trimEnd())
     }
 
-    const out = resolveNovelPath(params.output)
+    const out = await resolveNovelPath(params.output, { novelId: params.novelId })
     await fs.mkdir(path.dirname(out.abs), { recursive: true })
     await askEdit(ctx, out.abs, { filepath: out.abs, chapters: files.length })
     await fs.writeFile(out.abs, parts.join(""), "utf8")
@@ -43,4 +45,3 @@ export const NovelExportTool = Tool.define("novel.export", {
     }
   },
 })
-

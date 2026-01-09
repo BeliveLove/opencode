@@ -8,10 +8,11 @@ import { askRead } from "./util"
 export const NovelFsReadTool = Tool.define("novel.fs.read", {
   description: DESCRIPTION,
   parameters: z.object({
-    path: z.string().describe("Path relative to novel/ (e.g. chapters/CH_01_001.md)"),
+    path: z.string().describe("Path relative to novel root (e.g. chapters/CH_01_001.md)"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
-    const resolved = resolveNovelPath(params.path)
+    const resolved = await resolveNovelPath(params.path, { novelId: params.novelId })
     await askRead(ctx, resolved.abs)
     const output = await fs.readFile(resolved.abs, "utf8")
     return {
@@ -23,4 +24,3 @@ export const NovelFsReadTool = Tool.define("novel.fs.read", {
     }
   },
 })
-

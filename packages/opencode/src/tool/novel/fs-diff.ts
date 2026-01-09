@@ -9,13 +9,14 @@ import { resolveNovelPath } from "../../novel/paths"
 export const NovelFsDiffTool = Tool.define("novel.fs.diff", {
   description: DESCRIPTION,
   parameters: z.object({
-    path: z.string().describe("Path relative to novel/"),
+    path: z.string().describe("Path relative to novel root"),
     aRef: z.string().optional().describe("Git ref (default: HEAD)"),
     bRef: z.string().optional().describe("Git ref or WORKTREE (default: WORKTREE)"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, _ctx) {
     await requireGitRepo()
-    const resolved = resolveNovelPath(params.path)
+    const resolved = await resolveNovelPath(params.path, { novelId: params.novelId })
     const aRef = normalizeRef(params.aRef, "HEAD")
     const bRef = normalizeRef(params.bRef, "WORKTREE")
 

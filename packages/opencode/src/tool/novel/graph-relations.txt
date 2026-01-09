@@ -1,6 +1,5 @@
-Generate Mermaid relation graphs from `novel/canon/characters.yml` and `novel/canon/factions.yml`.
+Generate Mermaid relation graphs from canon files (relative to the novel root).
 
 Returns Markdown containing Mermaid diagrams for:
 - Character relations
 - Faction relations
-

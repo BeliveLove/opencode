@@ -13,4 +13,3 @@ $ARGUMENTS
 3) 默认写入 `chapters/<CH>.polished.md`（用 `novel.fs.write`，`mode=overwrite`）。
 
 如果用户参数包含 `--inplace`，则覆盖 `chapters/<CH>.md`。
-

@@ -6,8 +6,8 @@ import { Tool } from "../tool"
 import DESCRIPTION from "./canon-validate.txt"
 import { CANON_KINDS, CanonKind, canonIdPrefix, readAllCanon } from "../../novel/canon"
 import { extractRefIds, parseChapterMarkdown } from "../../novel/chapter"
-import { resolveNovelPath } from "../../novel/paths"
-import { askReadPattern, ensureNovelDirExists } from "./util"
+import { resolveNovelDir, resolveNovelPath } from "../../novel/paths"
+import { askReadPattern } from "./util"
 
 type Issue = {
   level: "error" | "warning"
@@ -28,13 +28,23 @@ export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
   description: DESCRIPTION,
   parameters: z.object({
     chapterId: z.string().optional().describe("Optional chapter id to validate refs (e.g. CH_01_003)"),
+    novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
   }),
   async execute(params, ctx) {
     const issues: Issue[] = []
 
-    const exists = await ensureNovelDirExists()
-    if (!exists) {
-      issues.push({ level: "error", code: "NOVEL_NOT_INITIALIZED", message: "未找到 novel/ 目录，请先运行 novel-init" })
+    const dir = await (async () => {
+      try {
+        return await resolveNovelDir({ novelId: params.novelId })
+      } catch (err) {
+        const msg = (err as any)?.message?.toString?.() || "unknown error"
+        const code = msg.includes("未选择当前小说") ? "NO_ACTIVE_NOVEL" : "NOVEL_NOT_INITIALIZED"
+        issues.push({ level: "error", code, message: msg })
+        return null
+      }
+    })()
+
+    if (!dir) {
       return {
         title: "novel.canon.validate",
         output: YAML.stringify({ ok: false, issues }).trimEnd(),
@@ -42,12 +52,14 @@ export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
       }
     }
 
-    await askReadPattern(ctx, "novel/canon/*", { scope: "novel/canon" })
+    await askReadPattern(ctx, path.posix.join(dir.relToProjectPosix, "canon/*"), { scope: path.posix.join(dir.relToProjectPosix, "canon") })
     if (params.chapterId) {
-      await askReadPattern(ctx, `novel/chapters/${params.chapterId}.md`, { scope: "novel/chapters" })
+      await askReadPattern(ctx, path.posix.join(dir.relToProjectPosix, `chapters/${params.chapterId}.md`), {
+        scope: path.posix.join(dir.relToProjectPosix, "chapters"),
+      })
     }
 
-    const all = await readAllCanon()
+    const all = await readAllCanon({ novelId: params.novelId })
 
     for (const kind of CANON_KINDS) {
       const prefix = canonIdPrefix(kind)
@@ -126,14 +138,14 @@ export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
     }
 
     if (params.chapterId) {
-      const chapterPath = resolveNovelPath(path.join("chapters", `${params.chapterId}.md`))
+      const chapterPath = await resolveNovelPath(path.join("chapters", `${params.chapterId}.md`), { novelId: params.novelId })
       const chapterContent = await fs.readFile(chapterPath.abs, "utf8").catch(() => "")
       if (!chapterContent.trim()) {
         issues.push({
           level: "error",
           code: "CHAPTER_NOT_FOUND",
           chapterId: params.chapterId,
-          message: `未找到章节文件：novel/chapters/${params.chapterId}.md`,
+          message: `未找到章节文件：${path.posix.join(dir.relToProjectPosix, `chapters/${params.chapterId}.md`)}`,
         })
       } else {
         const parsed = parseChapterMarkdown(chapterContent)
@@ -182,4 +194,3 @@ export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
     }
   },
 })
-

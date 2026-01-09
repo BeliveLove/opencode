@@ -19,6 +19,7 @@ import { BunProc } from "@/bun"
 import { Installation } from "@/installation"
 import { ConfigMarkdown } from "./markdown"
 import { existsSync } from "fs"
+import { createRequire } from "module"
 
 export namespace Config {
   const log = Log.create({ service: "config" })
@@ -1117,9 +1118,18 @@ export namespace Config {
       if (data.plugin) {
         for (let i = 0; i < data.plugin.length; i++) {
           const plugin = data.plugin[i]
-          try {
-            data.plugin[i] = import.meta.resolve!(plugin, configFilepath)
-          } catch (err) {}
+          const resolved = (() => {
+            // Prefer `import.meta.resolve` when it works, but it can be unreliable on some platforms.
+            try {
+              return import.meta.resolve?.(plugin, pathToFileURL(configFilepath).href)
+            } catch (_err) {}
+            try {
+              const req = createRequire(configFilepath)
+              return pathToFileURL(req.resolve(plugin)).href
+            } catch (_err) {}
+            return undefined
+          })()
+          if (resolved) data.plugin[i] = resolved
         }
       }
       return data

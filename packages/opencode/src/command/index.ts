@@ -6,6 +6,8 @@ import { Identifier } from "../id/id"
 import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
 import PROMPT_NOVEL_INIT from "./template/novel-init.txt"
+import PROMPT_NOVEL_LIST from "./template/novel-list.txt"
+import PROMPT_NOVEL_USE from "./template/novel-use.txt"
 import PROMPT_NOVEL_PLAN from "./template/novel-plan.txt"
 import PROMPT_NOVEL_DRAFT from "./template/novel-draft.txt"
 import PROMPT_NOVEL_CHECK from "./template/novel-check.txt"
@@ -61,6 +63,8 @@ export namespace Command {
     INIT: "init",
     REVIEW: "review",
     NOVEL_INIT: "novel-init",
+    NOVEL_LIST: "novel-list",
+    NOVEL_USE: "novel-use",
     NOVEL_PLAN: "novel-plan",
     NOVEL_DRAFT: "novel-draft",
     NOVEL_CHECK: "novel-check",
@@ -92,11 +96,27 @@ export namespace Command {
       },
       [Default.NOVEL_INIT]: {
         name: Default.NOVEL_INIT,
-        description: "初始化小说工程目录（novel/）",
+        description: "初始化小说工程目录（novels/<novel_id>/）",
         get template() {
           return PROMPT_NOVEL_INIT
         },
         hints: hints(PROMPT_NOVEL_INIT),
+      },
+      [Default.NOVEL_LIST]: {
+        name: Default.NOVEL_LIST,
+        description: "列出小说工程并显示当前 active",
+        get template() {
+          return PROMPT_NOVEL_LIST
+        },
+        hints: hints(PROMPT_NOVEL_LIST),
+      },
+      [Default.NOVEL_USE]: {
+        name: Default.NOVEL_USE,
+        description: "切换当前 active 小说（写入 novels/.active）",
+        get template() {
+          return PROMPT_NOVEL_USE
+        },
+        hints: hints(PROMPT_NOVEL_USE),
       },
       [Default.NOVEL_PLAN]: {
         name: Default.NOVEL_PLAN,

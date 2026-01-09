@@ -1,4 +1,3 @@
-Read a file inside `novel/`.
+Read a file inside the current novel directory (`novels/<active>/` or legacy `novel/`).
 
-The `path` parameter is relative to `novel/` (e.g. `chapters/CH_01_001.md`).
-
+The `path` parameter is relative to the novel root (e.g. `chapters/CH_01_001.md`).

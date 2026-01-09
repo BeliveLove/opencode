@@ -2,11 +2,20 @@
 
 要求：
 
-1. 使用 `novel.fs.write` 创建必要目录与文件（`mode=create`，避免覆盖用户已有内容）。
-2. 生成的 `novel/config.yml`、`novel/canon/*.yml`、`novel/notes/*.md` 必须包含可用默认值。
-3. 至少生成一份示例章节 `novel/chapters/CH_01_001.md`，包含 YAML frontmatter 与一个示例场景标题。
+0. 小说工程根目录必须为 `novels/<novel_id>/`（多本小说），并写入 `novels/.active`。
+1. 使用 `novel.fs.write` 创建必要目录与文件（`mode=create`，避免覆盖用户已有内容），并在每次调用里传入 `novelId`。
+2. 生成的 `novels/<novel_id>/config.yml`、`novels/<novel_id>/canon/*.yml`、`novels/<novel_id>/notes/*.md` 必须包含可用默认值。
+3. 至少生成一份示例章节 `novels/<novel_id>/chapters/CH_01_001.md`，包含 YAML frontmatter 与一个示例场景标题。
 
-请按下面清单逐个写入（路径均相对于 `novel/`，不要写成绝对路径）：
+novel_id 规则：
+
+- 若用户参数里提供了一个 slug（例如 `my-novel`），用它作为 `<novel_id>`；否则默认用 `my-novel`。
+
+用户参数：
+
+$ARGUMENTS
+
+请按下面清单逐个写入（路径均相对于 `novels/<novel_id>/`，不要写成绝对路径）：
 
 - `config.yml` 内容：
 
@@ -37,10 +46,23 @@ workflow:
 - `canon/characters.yml` 内容：
 
 ```yml
-[]
+- id: CHAR_PROTAGONIST
+  name: 主角（示例）
 ```
 
 - `canon/factions.yml` 内容：
+
+```yml
+[]
+```
+
+- `canon/relations.yml` 内容：
+
+```yml
+[]
+```
+
+- `canon/arcs.yml` 内容：
 
 ```yml
 []
@@ -107,3 +129,4 @@ status: draft
 
 写入完成后，用一段话告诉我创建了哪些文件、哪些被跳过（已存在）。
 
+最后调用 `novel.project.use` 将 active 设为本次创建的 `<novel_id>`。

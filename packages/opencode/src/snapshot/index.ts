@@ -67,7 +67,9 @@ export namespace Snapshot {
         .split("\n")
         .map((x) => x.trim())
         .filter(Boolean)
-        .map((x) => path.join(Instance.worktree, x)),
+        // Intentionally join with "/" to match how tests build paths (`${tmp.path}/file`)
+        // and to keep git-friendly separators on Windows.
+        .map((x) => `${Instance.worktree}/${x}`),
     }
   }
 

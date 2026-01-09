@@ -12,4 +12,3 @@ $ARGUMENTS
    - 每个场景标题必须是 `## SC_<章节ID>_<序号> ...`
    - 在涉及设定/人物/伏笔时，尽量使用 `[REF: ...]` 标注可追溯 ID
 3) 写入 `chapters/<CH>.md`（用 `novel.fs.write`，`mode=overwrite`）。
-

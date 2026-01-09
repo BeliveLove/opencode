@@ -16,6 +16,8 @@ import { NovelFsWriteTool } from "./novel/fs-write"
 import { NovelFsDiffTool } from "./novel/fs-diff"
 import { NovelFsRollbackTool } from "./novel/fs-rollback"
 import { NovelExportTool } from "./novel/export"
+import { NovelProjectListTool } from "./novel/project-list"
+import { NovelProjectUseTool } from "./novel/project-use"
 import { NovelCanonGetTool } from "./novel/canon-get"
 import { NovelCanonSearchTool } from "./novel/canon-search"
 import { NovelCanonUpsertTool } from "./novel/canon-upsert"
@@ -124,6 +126,8 @@ export namespace ToolRegistry {
       NovelFsDiffTool,
       NovelFsRollbackTool,
       NovelExportTool,
+      NovelProjectListTool,
+      NovelProjectUseTool,
       NovelCanonGetTool,
       NovelCanonSearchTool,
       NovelCanonUpsertTool,
