@@ -1,0 +1,9 @@
+Generate a chapter report for canon bookkeeping.
+
+This inspects:
+- YAML frontmatter (participants/locations/refs)
+- Inline [REF: ...] tags
+- ID-like tokens (CHAR_/RULE_/FB_/ORG_/LOC_/ITEM_) in the chapter text
+
+Returns a Markdown report with a structured YAML summary.
+

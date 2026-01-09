@@ -1,0 +1,5 @@
+Create or update a canon item by id and return a patch.
+
+By default this tool does NOT apply changes.
+Set `apply=true` to write back to `novel/canon/<kind>.yml`.
+

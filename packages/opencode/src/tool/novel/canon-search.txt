@@ -1,0 +1,6 @@
+Search canon items by query.
+
+Matches against item id and JSON text.
+
+Returns a JSON array of hits: `{ id, label? }`.
+

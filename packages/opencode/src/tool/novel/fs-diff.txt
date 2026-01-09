@@ -1,0 +1,5 @@
+Show a diff for a file inside `novel/` using git.
+
+- `aRef` and `bRef` are git refs (e.g. HEAD, HEAD~1, a commit hash).
+- You can use the special ref `WORKTREE` to compare against the current working tree.
+

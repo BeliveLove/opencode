@@ -1,0 +1,4 @@
+Read a file inside `novel/`.
+
+The `path` parameter is relative to `novel/` (e.g. `chapters/CH_01_001.md`).
+

@@ -1,0 +1,8 @@
+Validate `novel/canon/*.yml` and (optionally) validate refs for a chapter.
+
+If `chapterId` is provided, this also checks:
+- the chapter file exists
+- all referenced IDs exist in canon
+
+Returns a structured YAML report: `{ ok, issues }`.
+
