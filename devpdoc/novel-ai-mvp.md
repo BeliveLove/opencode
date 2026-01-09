@@ -1,4 +1,4 @@
-# 写小说 AI 软件（单人 MVP）拆分说明
+# 写小说 AI 软件（产品设计 + MVP 拆分）
 
 本文件用于把“写小说的 AI 软件”按 `skill / tool / agent` 拆解成可落地的最小闭环设计，默认不考虑协作与发布。
 
@@ -8,12 +8,112 @@
 - **Tool**：能力接口/外部系统（存取数据、检索、导入导出、评测等），为 Skill/Agent 提供可执行能力。
 - **Agent**：扮演某个角色的执行体，负责拆任务、组装上下文、选择 Skill、调用 Tool，并产出最终结果。
 
+## 产品视角补全（不限定 MVP）
+
+本节不讨论“最小能跑”，而从产品角度补齐：用户是谁、怎么用、用起来哪里会卡、系统需要哪些“稳态能力”。
+
+### 产品定位与目标用户
+
+- **定位**：本地优先的“小说工程 + AI 辅助写作”工作台。核心不是一键生成，而是把长篇写作变成**可管理、可追溯、可回滚**的工程流程。
+- **目标用户**
+  - 单人作者（网文/短篇/长篇），追求“连续产出 + 设定不崩”。
+  - 轻度产品化写作（有明确字数目标/更新频率/风格约束）。
+  - 已有作品维护者（重写、修订、设定整理、出版前校对）。
+- **关键价值**
+  - **稳定**：不靠“模型记忆”硬撑，所有关键事实落盘到 `canon/`。
+  - **可控**：任何写回都可审阅（补丁/差异/回滚）。
+  - **低摩擦**：少量命令即可“继续写”；不要求用户先学复杂系统。
+  - **可扩展**：允许覆盖模板/增加自定义命令/引入不同写作流派。
+
+### 关键用户旅程（端到端）
+
+1. **首次使用 / 创建小说**
+   - 用户进入 `novel` agent 或运行 `novel-init`。
+   - 系统扫描 `novels/*/config.yml`：若无作品 → 进入新建向导；若有作品 → 进入选择/继续。
+   - 新建向导收集：书名（显示名）、题材/主题、篇幅目标、风格语气、POV、禁忌；生成 `novels/<novel_id>/` 结构并设置 `novels/.active`。
+2. **继续创作（最常见日常）**
+   - 用户打开某章或指定 `CH_*`：`novel-plan` → `novel-draft` → `novel-check` → `novel-polish`。
+   - 系统在每次产出后提示“是否写回 canon/是否更新关系与弧光”。
+3. **长篇稳态维护**
+   - 周期性运行 `novel-canon-update`（或分别运行 `novel-characters / novel-factions / novel-relations / novel-arc`）。
+   - 需要时生成 Mermaid 图、章节报表，帮助人类快速审阅“现在到底写到哪了”。
+4. **回退与分叉**
+   - 任何时候可 `diff/rollback` 到某个 ref；支持按章节生成“修订稿/重写稿”而不是覆盖原稿。
+5. **导出与交付**
+   - 单章/全书导出 Markdown（后续可扩展到 Docx/PDF/平台发布，但不影响核心工程结构）。
+
+### 信息架构（IA）与交互原则
+
+即使 UI 先不做复杂，产品层面也需要一个稳定的“导航骨架”：
+
+- **全局层（跨小说）**
+  - 小说列表（`novel-list`）：展示 `novel_id` + `project.title` + 最近编辑时间 + 进度（可选）。
+  - 选择当前小说（`novel-use`）+ 清晰展示当前 active。
+- **小说层（单本）**
+  - 首页/概览：题材、POV、风格约束、当前写到第几章、待办（例如“未写回 canon 的变更”）。
+  - 章节：`chapters/` + `outlines/` + 导出物。
+  - Canon：人物/势力/关系/弧光/规则/时间线/伏笔/术语（支持检索与跳转）。
+  - 报表与图：关系网、时间线、伏笔未回收列表。
+- **交互原则**
+  - **默认不问太多**：能自动选择就自动选择（仅 1 本小说时默认 active）。
+  - **关键动作必须可见且可撤销**：写回 canon 必须出补丁；回滚必须明确影响范围。
+  - **错误要可恢复**：配置损坏/引用缺失时给出最小修复路径，而不是让用户“自己想办法”。
+
+### 状态、配置与可移植性（产品级）
+
+- **全局配置**：模型提供商、默认预算、默认风格模板、默认导出格式。
+- **单小说配置**：`novels/<novel_id>/config.yml`（书名、语言、POV、风格、禁忌、模型偏好、工作流约束）。
+- **当前小说指针**：`novels/.active`（可选，但建议有；缺失时可由用户选择或在只有 1 本作品时自动重建）。
+- **小说命名策略**
+  - `novel_id` 是目录名（稳定标识）：建议用 slug（`my-novel`），创建时校验唯一性；除非用户显式执行重命名命令，否则不自动改。
+  - `project.title` 是显示名：允许频繁修改；列表展示用它。
+- **可移植性要求**：拷贝 `novels/<novel_id>/` 到另一台机器能继续写（与 UI/缓存/会话无关）。
+
+### 稳态能力缺口（建议补齐的产品能力）
+
+- **可观测与成本**：每次生成记录 token/费用/耗时（按小说/按章节汇总），避免“写着写着成本失控”。
+- **索引与搜索**
+  - 全文搜索（章节/大纲/notes），以及 ID 搜索（`CHAR_*/FB_*/RULE_*`）。
+  - 在编辑器/输入框中对 `[REF: ...]` 提供补全与校验提示（哪怕是纯文本提示）。
+- **一致性闸门（可配置）**
+  - 允许用户设置“哪些错误必须阻止继续写”（例如引用缺失、时间线硬冲突、伏笔状态机非法）。
+  - 对“软问题”（节奏慢/动机弱）只提示，不阻断。
+- **故障与恢复**
+  - `config.yml`/`canon/*.yml` YAML 解析失败时，提供：定位行号、自动修复建议、或降级为只读模式。
+  - 当 `novels/.active` 指向不存在目录时，引导重新选择。
+  - 当章节被 git 冲突污染时，给出最小解决路径（保留两版并重新跑 check）。
+
+### 产品能力清单（模块化，便于规划与拆分）
+
+- **Novel 管理**
+  - 新建/选择/重命名/归档小说（`novels/<novel_id>/`）。
+  - 当前小说状态（active）+ 最近打开章节/最近使用命令（可选）。
+- **写作工作台**
+  - 大纲与场景卡：可浏览、可跳转到章、可关联 canon。
+  - 章节编辑：支持草稿/修订稿/重写稿多版本并行（不强制覆盖原稿）。
+  - 目标管理：字数目标、更新频率、写作里程碑（可选，但对网文非常关键）。
+- **Canon 工作台**
+  - 人物/势力/关系/弧光/规则/时间线/伏笔/术语：可增删改查、可搜索、可生成图与报表。
+  - 写回策略：默认生成补丁提案，用户确认后落盘。
+- **质量与一致性（QA）**
+  - 引用校验、时间线冲突、人物状态冲突、伏笔状态机、禁用词/口癖检查。
+  - 分级告警（阻断/警告/建议）+ 一键生成“最小修复补丁”。
+- **导入/导出/发布**
+  - Markdown 导入导出（章节/全书/选集）。
+  - 后续可扩展：Docx/PDF、平台发布（但不应改变工程结构）。
+- **成本与统计**
+  - token/费用/耗时：按章节、按会话、按小说聚合；支持预算阈值提醒。
+  - 产出统计：字数、章节数、连续写作天数（可选）。
+- **模板与扩展**
+  - 风格模板（例如“克制悬疑/轻喜恋爱/硬核科幻”）与 canon schema 版本迁移。
+  - 允许用户覆盖命令模板与提示词，但系统必须有稳定的内置默认实现。
+
 ## MVP 交付物（落地版：做完你能用到什么）
 
 以“单人、本地、可反复写章”为目标，MVP 最终应当至少交付以下内容（否则很难真正进入写作闭环）：
 
-1. **一个可初始化的小说工程目录**：`novel/` 下有固定结构（章节、canon、notes），并带最小 `config.yml`。
-2. **一套可直接调用的 Skills**：点子/大纲/写手/监修/润色等能跑通，并且能产出结构化块供写回。
+1. **一个可初始化的小说工程目录**：`novels/` 为系统根目录；每一本小说是一个独立目录 `novels/<novel_id>/`，其下有固定结构（章节、canon、notes），并带最小 `config.yml`。
+2. **一套可直接调用的 Skills**：点子/大纲/写手/监修/润色等能跑通；并且包含**人物/势力/关系/成长线（弧光）**的结构化梳理能力，能产出结构化块供写回。
 3. **一组最小 Tools**：能读写 chapter/canon，能生成 diff/回滚，能做一致性校验。
 4. **一条明确的“从 0 到一章成品”的操作路径**：哪怕只是命令/模板，也要能照着做完。
 
@@ -34,10 +134,29 @@
 本 MVP 文档里提到的 **所有 Skills / Tools / Agents / Commands** 都必须满足：
 
 - **已编码实现并随仓库交付**：要么是 `packages/opencode` 内的内置实现，要么是仓库内 `.opencode/` 下的可执行代码/模板（同样随项目提交）。
+- **小说相关命令必须内置**：`novel-*` 命令与 `novel` agent 必须在 `packages/opencode` 内提供“系统内置默认实现”，用户不需要新建任何 `.opencode/command/` 或 `.opencode/agent/` 才能使用。
 - **零额外配置即可使用**：用户 clone/install 后，不需要再去 `~/.claude/skills`、环境变量、手工复制文件等做“额外配置”才能跑通流程。
 - **不引用外部隐式状态**：运行不依赖用户 home 目录里预置的 skill/tool/agent；如有同名外部项，MVP 行为以项目内版本为准（或显式禁用外部加载）。
 
-> 允许的“生成物”：`novel-init` 在项目目录内生成 `novel/` 工程文件（属于写作产物，不算“额外配置”）。这些文件应带默认值，用户不改也能继续跑通后续命令。
+> 允许的“生成物”：`novel-init` 在项目目录内生成 `novels/` 以及 `novels/<novel_id>/` 工程文件（属于写作产物，不算“额外配置”）。这些文件应带默认值，用户不改也能继续跑通后续命令。
+
+### 非功能性需求（产品级，别等到“写崩了”才补）
+
+- **可靠性**
+  - 对外部依赖失败（模型超时、无网络、限流）必须有明确提示与可重试策略；必要时允许切换到小模型/本地模型（如果可用）。
+  - 任何“写文件”的动作都必须保证原子性（写临时文件 → 置换），避免写到一半断电导致损坏。
+- **可恢复性**
+  - 所有自动写回（尤其是 canon）必须可回滚：要么走 git，要么走自身的备份版本（建议优先 git）。
+  - 在 `canon.validate` 失败时输出“最小修复清单”，并提供半自动修复入口（生成补丁提案）。
+- **可用性**
+  - 常用动作应当是“少记忆、可发现”：`novel` agent 的向导 + `novel-list` + `novel-use` 足够覆盖 80% 场景。
+  - 交互要“可中断”：生成中途可停止，且不会留下半成品写回。
+- **性能**
+  - 上下文构建应可缓存（例如最近章节摘要、canon 索引），避免每次都全量读取。
+  - 对大文件/多章工程要有分片策略（避免把整本书塞进上下文）。
+- **可维护性与可扩展**
+  - Canon schema 要有版本字段（`schema_version`），为未来字段演进预留迁移策略。
+  - 命令与工具接口保持向后兼容：新增字段必须可选，旧工程可继续使用。
 
 ### MVP 不做（明确非目标）
 
@@ -53,18 +172,44 @@
 
 **A. Command 驱动（推荐，最快）**
 
-- 在 `.opencode/command/` 提供 5~7 个固定命令模板（用户只填少量参数）：
-  - `novel-init`：初始化 `novel/` 目录与 `config.yml`
-  - `novel-idea`：生成题材/设定草案并写入 `notes/ideas.md`
-  - `novel-plan <CH_..>`：生成章纲+场景卡并写入 `outlines/`
-  - `novel-draft <CH_..>`：按场景卡产出正文并写入 `chapters/`
+- 提供一组固定 `novel-*` 命令（必须系统内置；允许用户用 `.opencode/command/` 覆盖/扩展，但 MVP 不依赖它），用户只填少量参数：
+  - `novel-init <novel_id?>`：初始化 `novels/`，并创建/选择一本小说 `novels/<novel_id>/`（未指定时走“新建向导”）
+  - `novel-list`：列出 `novels/` 下可用小说（从 `novels/*/config.yml` 扫描）
+  - `novel-use <novel_id>`：设置“当前小说”（建议写入项目内状态，例如 `novels/.active`）
+  - `novel-idea`：生成题材/设定草案并写入（当前小说的）`notes/ideas.md`
+  - `novel-plan <CH_..>`：生成章纲+场景卡并写入（当前小说的）`outlines/`
+  - `novel-draft <CH_..>`：按场景卡产出正文并写入（当前小说的）`chapters/`
   - `novel-check <CH_..>`：对账 canon/时间线/伏笔，输出问题清单与最小修复方案
   - `novel-polish <CH_..>`：润色/节奏调整（保守/重写两档）
   - `novel-export`：导出单章/全书（Markdown 拼接即可）
+  - `novel-characters [<CH_..>]`：梳理/更新人物卡与状态（可对指定章节抽取；写回 `canon/characters.yml`）
+  - `novel-factions [<CH_..>]`：梳理/更新势力、资源、目标、对外关系（写回 `canon/factions.yml`）
+  - `novel-relations [<CH_..>]`：梳理/更新人物关系网与势力关系网（写回 `canon/relations.yml`，并可生成 Mermaid 图供审阅）
+  - `novel-arc [<CHAR_..>]`：梳理/更新角色弧光/成长线（写回 `canon/arcs.yml`）
+
+> 也可以把上面四个合并为一个更“软件化”的入口：`novel-canon-update <CH_..>`（读取本章 → 更新人物/势力/关系/弧光 → 输出补丁提案，用户确认后写回）。MVP 可先做合并版，再逐步拆分。
 
 **B. 单一 Orchestrator Agent（次选）**
 
-- 在 `.opencode/agent/` 提供一个“小说总控” agent，让用户用对话驱动，但仍强制走结构化输出与写回。
+- 提供一个“小说总控” agent（建议内置 `novel` agent），让用户用对话驱动，但仍强制走结构化输出与写回。
+
+### 多本小说的交互约定（novel agent 的“脑子”应该做什么）
+
+在用户选择 `novel` agent（或执行任意 `novel-*` 命令）时，系统应当具备“识别/选择/新建小说工程”的最小向导能力：
+
+1. **发现小说**：扫描 `novels/*/config.yml`，把每个目录视为一本小说（`<novel_id>` 为目录名）。
+2. **选择当前小说（active novel）**：
+   - 若存在 `novels/.active`（或其他项目内状态文件），优先使用其指向的 `<novel_id>`。
+   - 若只发现 1 本小说，自动选中。
+   - 若发现多本但没有 active，提示用户选择（列表项展示 `config.yml` 中的 `project.title`）。
+3. **新建向导（当没有任何小说或用户选择新建）**：引导用户输入最小必要信息，并据此生成 `novels/<novel_id>/config.yml`：
+   - 题材/主题（一句话）
+   - 目标字数或篇幅档（短篇/中篇/长篇）
+   - 风格与语气（如“克制/轻喜/硬核”等）
+   - 叙述视角与时态（POV/第一或第三人称）
+   - 约束/禁忌（避免的梗、敏感点、写作禁用词）
+
+> MVP 里“选择/新建”可以先用纯文本交互完成（不强依赖新增 UI），但必须能稳定落盘，并让后续命令无需重复选择。
 
 ## 章节文件规范（Markdown 也要可对账）
 
@@ -148,17 +293,19 @@ MVP 里最容易翻车的是：上下文塞不下、检索不准、越写越漂�
 
 ### 文件与版本
 
-- `novel.fs.read(path)`：读取 `novel/` 内文件（Markdown/YAML/JSON）
-- `novel.fs.write(path, content, mode)`：写入（`mode`: `create|overwrite|append`）
-- `novel.fs.diff(path, aRef, bRef)`：生成差异（最小：git diff）
-- `novel.fs.rollback(path, ref)`：回滚到指定版本（最小：git checkout/restore）
+- `novel.fs.read(path, novelId?)`：读取小说目录内文件（默认当前小说：`novels/<active>/`；`path` 为相对路径，如 `canon/characters.yml`）
+- `novel.fs.write(path, content, mode, novelId?)`：写入（`mode`: `create|overwrite|append`）
+- `novel.fs.diff(path, aRef, bRef, novelId?)`：生成差异（最小：git diff）
+- `novel.fs.rollback(path, ref, novelId?)`：回滚到指定版本（最小：git checkout/restore）
 
 ### Canon CRUD（结构化）
 
-- `novel.canon.get(kind, id)`：按 `kind=characters|factions|rules|timeline|foreshadow|glossary` 取条目
+- `novel.canon.get(kind, id)`：按 `kind=characters|factions|relations|arcs|rules|timeline|foreshadow|glossary` 取条目
 - `novel.canon.upsert(kind, item, source)`：新增/更新条目（强制带 `source.chapter`）
 - `novel.canon.search(kind, query)`：关键词检索（MVP 先用文本匹配即可）
 - `novel.canon.validate(chapterId?)`：校验：ID 合法、引用存在、必填字段齐全、伏笔状态机合法
+
+> 多本小说版本：以上接口默认作用于当前小说 `novels/<active>/`；必要时支持传入 `novelId` 覆盖当前选择。
 
 ### 图与报表（人工审阅友好）
 
@@ -341,26 +488,30 @@ MVP 里最容易翻车的是：上下文塞不下、检索不准、越写越漂�
 不做协作/发布时，仍建议固定目录，便于 Tool 检索与脚本化。
 
 ```text
-novel/
-  config.yml
-  chapters/
-    CH_01_001.md
-    CH_01_002.md
-  outlines/
-    CH_01_003.outline.md
-  canon/
-    characters.yml
-    factions.yml
-    rules.yml
-    timeline.yml
-    foreshadow.yml
-    glossary.yml
-  notes/
-    ideas.md
-    scenes.md
+novels/
+  .active               # 可选：当前小说（内容为 <novel_id>）
+  my-novel/             # <novel_id>（目录名）
+    config.yml
+    chapters/
+      CH_01_001.md
+      CH_01_002.md
+    outlines/
+      CH_01_003.outline.md
+    canon/
+      characters.yml
+      factions.yml
+      relations.yml
+      arcs.yml
+      rules.yml
+      timeline.yml
+      foreshadow.yml
+      glossary.yml
+    notes/
+      ideas.md
+      scenes.md
 ```
 
-### 工程配置（novel/config.yml）
+### 工程配置（novels/<novel_id>/config.yml）
 
 MVP 先把“可复现/可控”的参数固定下来，避免同样输入每次产出风格完全不同：
 
@@ -420,7 +571,7 @@ workflow:
 
 ### 工程级验收（能持续用）
 
-- [ ] `novel/` 目录可在新机器上直接继续写（只依赖文件与模型配置，不依赖隐藏状态）
+- [ ] `novels/<novel_id>/` 目录可在新机器上直接继续写（只依赖文件与模型配置；`novels/.active` 可选且可重建）
 - [ ] 任意章节可以回滚到上一版并重新跑 `check` 得到一致结果（允许文案不同，但结构化对账结果应一致）
 
 ---
@@ -443,12 +594,13 @@ workflow:
 
 如果目标是“尽快开始写”，可以按下面顺序做（每一步完成就能产生可用增量）：
 
-1. **工程初始化与目录约定**：生成 `novel/` 目录 + 最小 `config.yml` + 示例 canon 文件
+1. **工程初始化与目录约定**：生成 `novels/` 根目录 + `novels/<novel_id>/` 最小结构 + 示例 `config.yml/canon/chapters`
 2. **Canon 读写与校验**：实现 `canon.get/upsert/validate`，把“写回”打通
-3. **章节 plan/draft 的命令模板**：固定输入字段与输出 schema，先别追求智能检索
-4. **对账与最小修复提案**：`novel-check` 先能抓到“引用缺失/未写回/状态机非法”
-5. **版本与回滚**：接入 git diff/rollback，确保可控迭代
-6. **上下文拼装（Context Builder）**：最后再优化“写得更像人、更稳定”
+3. **人物/势力/关系/弧光的梳理与写回**：实现 `novel-characters / novel-factions / novel-relations / novel-arc`（或合并 `novel-canon-update`），保证长篇不会靠“隐性记忆”硬撑
+4. **章节 plan/draft 的命令模板**：固定输入字段与输出 schema，先别追求智能检索
+5. **对账与最小修复提案**：`novel-check` 先能抓到“引用缺失/未写回/状态机非法”
+6. **版本与回滚**：接入 git diff/rollback，确保可控迭代
+7. **上下文拼装（Context Builder）**：最后再优化“写得更像人、更稳定”
 
 ## 风险与降级（MVP 常见坑）
 
