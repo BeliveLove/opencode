@@ -5,6 +5,13 @@ import { Instance } from "../project/instance"
 import { Identifier } from "../id/id"
 import PROMPT_INITIALIZE from "./template/initialize.txt"
 import PROMPT_REVIEW from "./template/review.txt"
+import PROMPT_NOVEL_INIT from "./template/novel-init.txt"
+import PROMPT_NOVEL_PLAN from "./template/novel-plan.txt"
+import PROMPT_NOVEL_DRAFT from "./template/novel-draft.txt"
+import PROMPT_NOVEL_CHECK from "./template/novel-check.txt"
+import PROMPT_NOVEL_IDEA from "./template/novel-idea.txt"
+import PROMPT_NOVEL_POLISH from "./template/novel-polish.txt"
+import PROMPT_NOVEL_EXPORT from "./template/novel-export.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -53,6 +60,13 @@ export namespace Command {
   export const Default = {
     INIT: "init",
     REVIEW: "review",
+    NOVEL_INIT: "novel-init",
+    NOVEL_PLAN: "novel-plan",
+    NOVEL_DRAFT: "novel-draft",
+    NOVEL_CHECK: "novel-check",
+    NOVEL_IDEA: "novel-idea",
+    NOVEL_POLISH: "novel-polish",
+    NOVEL_EXPORT: "novel-export",
   } as const
 
   const state = Instance.state(async () => {
@@ -75,6 +89,62 @@ export namespace Command {
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
+      },
+      [Default.NOVEL_INIT]: {
+        name: Default.NOVEL_INIT,
+        description: "初始化小说工程目录（novel/）",
+        get template() {
+          return PROMPT_NOVEL_INIT
+        },
+        hints: hints(PROMPT_NOVEL_INIT),
+      },
+      [Default.NOVEL_PLAN]: {
+        name: Default.NOVEL_PLAN,
+        description: "生成章纲+场景卡并写入 outlines/",
+        get template() {
+          return PROMPT_NOVEL_PLAN
+        },
+        hints: hints(PROMPT_NOVEL_PLAN),
+      },
+      [Default.NOVEL_DRAFT]: {
+        name: Default.NOVEL_DRAFT,
+        description: "按场景卡产出正文并写入 chapters/",
+        get template() {
+          return PROMPT_NOVEL_DRAFT
+        },
+        hints: hints(PROMPT_NOVEL_DRAFT),
+      },
+      [Default.NOVEL_CHECK]: {
+        name: Default.NOVEL_CHECK,
+        description: "对账 canon/时间线/伏笔，输出问题清单与最小修复方案",
+        get template() {
+          return PROMPT_NOVEL_CHECK
+        },
+        hints: hints(PROMPT_NOVEL_CHECK),
+      },
+      [Default.NOVEL_IDEA]: {
+        name: Default.NOVEL_IDEA,
+        description: "生成题材/设定草案并写入 notes/ideas.md",
+        get template() {
+          return PROMPT_NOVEL_IDEA
+        },
+        hints: hints(PROMPT_NOVEL_IDEA),
+      },
+      [Default.NOVEL_POLISH]: {
+        name: Default.NOVEL_POLISH,
+        description: "润色/节奏调整（保守/重写两档）",
+        get template() {
+          return PROMPT_NOVEL_POLISH
+        },
+        hints: hints(PROMPT_NOVEL_POLISH),
+      },
+      [Default.NOVEL_EXPORT]: {
+        name: Default.NOVEL_EXPORT,
+        description: "导出单章/全书（Markdown 拼接）",
+        get template() {
+          return PROMPT_NOVEL_EXPORT
+        },
+        hints: hints(PROMPT_NOVEL_EXPORT),
       },
     }
 

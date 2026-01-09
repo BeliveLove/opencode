@@ -1,0 +1,7 @@
+将 `novel/chapters/` 下的章节导出为一本合并后的 Markdown。
+
+执行：
+
+1) 调用 `novel.export`，输出默认写到 `novel/export/book.md`。
+2) 输出导出结果的路径与章节数量。
+

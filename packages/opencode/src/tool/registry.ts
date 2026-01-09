@@ -11,6 +11,18 @@ import { WebFetchTool } from "./webfetch"
 import { WriteTool } from "./write"
 import { InvalidTool } from "./invalid"
 import { SkillTool } from "./skill"
+import { NovelFsReadTool } from "./novel/fs-read"
+import { NovelFsWriteTool } from "./novel/fs-write"
+import { NovelFsDiffTool } from "./novel/fs-diff"
+import { NovelFsRollbackTool } from "./novel/fs-rollback"
+import { NovelExportTool } from "./novel/export"
+import { NovelCanonGetTool } from "./novel/canon-get"
+import { NovelCanonSearchTool } from "./novel/canon-search"
+import { NovelCanonUpsertTool } from "./novel/canon-upsert"
+import { NovelCanonValidateTool } from "./novel/canon-validate"
+import { NovelReportChapterTool } from "./novel/report-chapter"
+import { NovelGraphTimelineTool } from "./novel/graph-timeline"
+import { NovelGraphRelationsTool } from "./novel/graph-relations"
 import type { Agent } from "../agent/agent"
 import { Tool } from "./tool"
 import { Instance } from "../project/instance"
@@ -107,6 +119,18 @@ export namespace ToolRegistry {
       WebSearchTool,
       CodeSearchTool,
       SkillTool,
+      NovelFsReadTool,
+      NovelFsWriteTool,
+      NovelFsDiffTool,
+      NovelFsRollbackTool,
+      NovelExportTool,
+      NovelCanonGetTool,
+      NovelCanonSearchTool,
+      NovelCanonUpsertTool,
+      NovelCanonValidateTool,
+      NovelReportChapterTool,
+      NovelGraphTimelineTool,
+      NovelGraphRelationsTool,
       ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [LspTool] : []),
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
       ...custom,

@@ -1,0 +1,16 @@
+先调用 `skill` 工具加载 `novel-polish`，并严格按技能契约输出。
+
+目标章节：
+
+$ARGUMENTS
+
+执行步骤：
+
+1) 读取 `chapters/<CH>.md` 与 `canon/`（用 `novel.fs.read`）。
+2) 输出两版：
+   - 保守润色：尽量不改剧情，只改表达与节奏
+   - 重写润色：允许调整段落顺序与场景推进，但不得引入新设定（除非同时给出写回计划）
+3) 默认写入 `chapters/<CH>.polished.md`（用 `novel.fs.write`，`mode=overwrite`）。
+
+如果用户参数包含 `--inplace`，则覆盖 `chapters/<CH>.md`。
+

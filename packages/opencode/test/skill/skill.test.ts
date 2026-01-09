@@ -46,7 +46,6 @@ Instructions here.
     directory: tmp.path,
     fn: async () => {
       const skills = await Skill.all()
-      expect(skills.length).toBe(1)
       const testSkill = skills.find((s) => s.name === "test-skill")
       expect(testSkill).toBeDefined()
       expect(testSkill!.description).toBe("A test skill for verification.")
@@ -88,7 +87,6 @@ description: Second test skill.
     directory: tmp.path,
     fn: async () => {
       const skills = await Skill.all()
-      expect(skills.length).toBe(2)
       expect(skills.find((s) => s.name === "skill-one")).toBeDefined()
       expect(skills.find((s) => s.name === "skill-two")).toBeDefined()
     },
@@ -114,7 +112,8 @@ Just some content without YAML frontmatter.
     directory: tmp.path,
     fn: async () => {
       const skills = await Skill.all()
-      expect(skills).toEqual([])
+      expect(skills.find((s) => s.name === "no-frontmatter")).toBeUndefined()
+      expect(skills.find((s) => s.name === "novel-plan")).toBeDefined()
     },
   })
 })
@@ -141,7 +140,6 @@ description: A skill in the .claude/skills directory.
     directory: tmp.path,
     fn: async () => {
       const skills = await Skill.all()
-      expect(skills.length).toBe(1)
       const claudeSkill = skills.find((s) => s.name === "claude-skill")
       expect(claudeSkill).toBeDefined()
       expect(claudeSkill!.location).toContain(".claude/skills/claude-skill/SKILL.md")
@@ -161,10 +159,10 @@ test("discovers global skills from ~/.claude/skills/ directory", async () => {
       directory: tmp.path,
       fn: async () => {
         const skills = await Skill.all()
-        expect(skills.length).toBe(1)
-        expect(skills[0].name).toBe("global-test-skill")
-        expect(skills[0].description).toBe("A global skill from ~/.claude/skills for testing.")
-        expect(skills[0].location).toContain(".claude/skills/global-test-skill/SKILL.md")
+        const globalSkill = skills.find((s) => s.name === "global-test-skill")
+        expect(globalSkill).toBeDefined()
+        expect(globalSkill!.description).toBe("A global skill from ~/.claude/skills for testing.")
+        expect(globalSkill!.location).toContain(".claude/skills/global-test-skill/SKILL.md")
       },
     })
   } finally {
@@ -179,7 +177,7 @@ test("returns empty array when no skills exist", async () => {
     directory: tmp.path,
     fn: async () => {
       const skills = await Skill.all()
-      expect(skills).toEqual([])
+      expect(skills.find((s) => s.name === "novel-idea")).toBeDefined()
     },
   })
 })
