@@ -1,12 +1,14 @@
 #!/usr/bin/env bun
 
-const dir = new URL("..", import.meta.url).pathname
-process.chdir(dir)
-
 import { $ } from "bun"
+import fs from "fs/promises"
 import path from "path"
+import { fileURLToPath } from "url"
 
 import { createClient } from "@hey-api/openapi-ts"
+
+const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
+process.chdir(dir)
 
 await $`bun dev generate > ${dir}/openapi.json`.cwd(path.resolve(dir, "../../opencode"))
 
@@ -39,6 +41,6 @@ await createClient({
 
 await $`bun prettier --write src/gen`
 await $`bun prettier --write src/v2`
-await $`rm -rf dist`
+await fs.rm("dist", { recursive: true, force: true })
 await $`bun tsc`
-await $`rm openapi.json`
+await fs.rm("openapi.json", { force: true })
