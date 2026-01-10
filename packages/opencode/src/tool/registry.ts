@@ -12,6 +12,7 @@ import { WriteTool } from "./write"
 import { InvalidTool } from "./invalid"
 import { SkillTool } from "./skill"
 import { DocImportTool } from "./doc/import"
+import { DocConvertTool } from "./doc/convert"
 import { DocRedactTool } from "./doc/redact"
 import { DocTemplateRenderTool } from "./doc/template-render"
 import { NovelFsReadTool } from "./novel/fs-read"
@@ -125,6 +126,7 @@ export namespace ToolRegistry {
       CodeSearchTool,
       SkillTool,
       DocImportTool,
+      DocConvertTool,
       DocRedactTool,
       DocTemplateRenderTool,
       NovelFsReadTool,

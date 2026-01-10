@@ -1,0 +1,5 @@
+Convert a document between formats using pandoc.
+
+Provide inputPath and outputPath. Optionally specify pandoc -f/-t formats or extra arguments.
+
+Pandoc must be available. If missing, the tool attempts to download from China mirrors and update PATH for this process.
