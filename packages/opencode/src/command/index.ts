@@ -16,6 +16,7 @@ import PROMPT_NOVEL_POLISH from "./template/novel-polish.txt"
 import PROMPT_NOVEL_EXPORT from "./template/novel-export.txt"
 import PROMPT_DOC_OUTLINE from "./template/doc-outline.txt"
 import PROMPT_DOC_DETECT from "./template/doc-detect.txt"
+import PROMPT_DOC_FLOW from "./template/doc-flow.txt"
 import PROMPT_DOC_FILL from "./template/doc-fill.txt"
 import PROMPT_DOC_REVIEW from "./template/doc-review.txt"
 import PROMPT_DOC_DIFF_SUMMARY from "./template/doc-diff-summary.txt"
@@ -72,6 +73,7 @@ export namespace Command {
     REVIEW: "review",
     DOC_OUTLINE: "doc-outline",
     DOC_DETECT: "doc-detect",
+    DOC_FLOW: "doc-flow",
     DOC_FILL: "doc-fill",
     DOC_REVIEW: "doc-review",
     DOC_DIFF_SUMMARY: "doc-diff-summary",
@@ -127,6 +129,15 @@ export namespace Command {
           return PROMPT_DOC_DETECT
         },
         hints: hints(PROMPT_DOC_DETECT),
+      },
+      [Default.DOC_FLOW]: {
+        name: Default.DOC_FLOW,
+        description: "文档流程向导（多文档）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_FLOW
+        },
+        hints: hints(PROMPT_DOC_FLOW),
       },
       [Default.DOC_FILL]: {
         name: Default.DOC_FILL,
