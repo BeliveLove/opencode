@@ -1,0 +1,10 @@
+﻿先调用 `skill` 工具加载 `doc-convert-pandoc`，并严格按技能契约输出。
+用户参数：$ARGUMENTS
+
+规则：
+- 参数中必须包含输入路径与输出路径，缺失时先追问补全。
+- 如果参数里包含看起来像文件路径（.md/.txt/.docx/.pptx/.xlsx/.pdf），直接作为 inputPath/outputPath。
+- 如果用户提供 from/to 或其它 pandoc 参数，传递给 `doc.convert`。
+- 输出路径必须带目标扩展名，避免歧义。
+
+然后（必须）：调用 `doc.convert` 执行转换，完成后提示输出文件路径。

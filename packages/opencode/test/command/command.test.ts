@@ -24,6 +24,7 @@ test("includes built-in novel and doc commands", async () => {
       expect(names.has("doc-diff-summary")).toBe(true)
       expect(names.has("doc-translate")).toBe(true)
       expect(names.has("doc-redaction-plan")).toBe(true)
+      expect(names.has("doc-convert")).toBe(true)
     },
   })
 }, 60_000)

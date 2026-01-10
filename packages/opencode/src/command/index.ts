@@ -20,6 +20,7 @@ import PROMPT_DOC_REVIEW from "./template/doc-review.txt"
 import PROMPT_DOC_DIFF_SUMMARY from "./template/doc-diff-summary.txt"
 import PROMPT_DOC_TRANSLATE from "./template/doc-translate.txt"
 import PROMPT_DOC_REDACTION_PLAN from "./template/doc-redaction-plan.txt"
+import PROMPT_DOC_CONVERT from "./template/doc-convert.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -74,6 +75,7 @@ export namespace Command {
     DOC_DIFF_SUMMARY: "doc-diff-summary",
     DOC_TRANSLATE: "doc-translate",
     DOC_REDACTION_PLAN: "doc-redaction-plan",
+    DOC_CONVERT: "doc-convert",
     NOVEL_INIT: "novel-init",
     NOVEL_LIST: "novel-list",
     NOVEL_USE: "novel-use",
@@ -159,6 +161,15 @@ export namespace Command {
           return PROMPT_DOC_REDACTION_PLAN
         },
         hints: hints(PROMPT_DOC_REDACTION_PLAN),
+      },
+      [Default.DOC_CONVERT]: {
+        name: Default.DOC_CONVERT,
+        description: "文档格式转换（pandoc）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_CONVERT
+        },
+        hints: hints(PROMPT_DOC_CONVERT),
       },
       [Default.NOVEL_INIT]: {
         name: Default.NOVEL_INIT,
