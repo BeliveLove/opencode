@@ -1,4 +1,0 @@
-Rollback a file inside `novel/` to a git ref (default: HEAD).
-
-This uses `git restore --source <ref> -- <path>` (or equivalent) and only works for tracked files.
-

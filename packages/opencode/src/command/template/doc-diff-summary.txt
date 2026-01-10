@@ -1,0 +1,14 @@
+先调用 `skill` 工具加载 `doc-diff-summary`，并严格按技能契约输出。
+
+用户参数：
+$ARGUMENTS
+
+规则：
+- 需要两份文本/两条路径：旧版与新版。
+- 如果参数里提供了文件路径（.md/.txt/.docx/.pptx/.xlsx/.pdf），用 `doc.import` 分别导入两份内容。
+
+然后（必须）：
+1) 在你生成完结构化 YAML 后，调用 `task` 工具使用 `docs` agent，把变更摘要整理成可发给评审/群里的 Markdown 版本（要点清晰、尽量短）。
+2) 最终回复里同时包含两部分：
+   - Part A：结构化 YAML（完整保留）
+   - Part B：`docs` agent 生成的变更摘要（Markdown）

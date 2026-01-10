@@ -1,5 +1,0 @@
-Read a file inside the `novel/` directory.
-
-- The `path` argument is relative to `novel/` (you may also pass a path starting with `novel/`).
-- This tool rejects path traversal and will only read files inside `novel/`.
-

@@ -1,4 +1,0 @@
-Export chapters as a single Markdown file.
-
-This concatenates `novel/chapters/*.md` (sorted by filename) into `novel/export/book.md` by default.
-

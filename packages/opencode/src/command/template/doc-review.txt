@@ -1,0 +1,14 @@
+先调用 `skill` 工具加载 `doc-review`，并严格按技能契约输出。
+
+用户参数：
+$ARGUMENTS
+
+规则：
+- 如果参数里包含/看起来像文件路径（.md/.txt/.docx/.pptx/.xlsx/.pdf），先用 `doc.import` 读取内容再 review。
+- 如果用户目标是对外分享/发布，请建议先运行 `doc.redact`，并指出可能的敏感信息风险点。
+
+然后（必须）：
+1) 在你生成完结构化 YAML 后，调用 `task` 工具使用 `docs` agent，把 review 结果整理成更易读的中文“审阅报告”（阻塞项/警告/建议/下一步）。
+2) 最终回复里同时包含两部分：
+   - Part A：结构化 YAML（完整保留）
+   - Part B：`docs` agent 生成的审阅报告（Markdown）

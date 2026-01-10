@@ -3,7 +3,7 @@ import { Command } from "../../src/command"
 import { Instance } from "../../src/project/instance"
 import { tmpdir } from "../fixture/fixture"
 
-test("includes built-in novel commands", async () => {
+test("includes built-in novel and doc commands", async () => {
   await using tmp = await tmpdir({ git: true })
 
   await Instance.provide({
@@ -18,6 +18,12 @@ test("includes built-in novel commands", async () => {
       expect(names.has("novel-idea")).toBe(true)
       expect(names.has("novel-polish")).toBe(true)
       expect(names.has("novel-export")).toBe(true)
+      expect(names.has("doc-outline")).toBe(true)
+      expect(names.has("doc-fill")).toBe(true)
+      expect(names.has("doc-review")).toBe(true)
+      expect(names.has("doc-diff-summary")).toBe(true)
+      expect(names.has("doc-translate")).toBe(true)
+      expect(names.has("doc-redaction-plan")).toBe(true)
     },
   })
 }, 60_000)

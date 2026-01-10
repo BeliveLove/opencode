@@ -14,6 +14,12 @@ import PROMPT_NOVEL_CHECK from "./template/novel-check.txt"
 import PROMPT_NOVEL_IDEA from "./template/novel-idea.txt"
 import PROMPT_NOVEL_POLISH from "./template/novel-polish.txt"
 import PROMPT_NOVEL_EXPORT from "./template/novel-export.txt"
+import PROMPT_DOC_OUTLINE from "./template/doc-outline.txt"
+import PROMPT_DOC_FILL from "./template/doc-fill.txt"
+import PROMPT_DOC_REVIEW from "./template/doc-review.txt"
+import PROMPT_DOC_DIFF_SUMMARY from "./template/doc-diff-summary.txt"
+import PROMPT_DOC_TRANSLATE from "./template/doc-translate.txt"
+import PROMPT_DOC_REDACTION_PLAN from "./template/doc-redaction-plan.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -62,6 +68,12 @@ export namespace Command {
   export const Default = {
     INIT: "init",
     REVIEW: "review",
+    DOC_OUTLINE: "doc-outline",
+    DOC_FILL: "doc-fill",
+    DOC_REVIEW: "doc-review",
+    DOC_DIFF_SUMMARY: "doc-diff-summary",
+    DOC_TRANSLATE: "doc-translate",
+    DOC_REDACTION_PLAN: "doc-redaction-plan",
     NOVEL_INIT: "novel-init",
     NOVEL_LIST: "novel-list",
     NOVEL_USE: "novel-use",
@@ -93,6 +105,60 @@ export namespace Command {
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
+      },
+      [Default.DOC_OUTLINE]: {
+        name: Default.DOC_OUTLINE,
+        description: "生成文档大纲（含来源/缺口）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_OUTLINE
+        },
+        hints: hints(PROMPT_DOC_OUTLINE),
+      },
+      [Default.DOC_FILL]: {
+        name: Default.DOC_FILL,
+        description: "按模板填充正文（不编造）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_FILL
+        },
+        hints: hints(PROMPT_DOC_FILL),
+      },
+      [Default.DOC_REVIEW]: {
+        name: Default.DOC_REVIEW,
+        description: "文档审阅（阻塞项/修复建议）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_REVIEW
+        },
+        hints: hints(PROMPT_DOC_REVIEW),
+      },
+      [Default.DOC_DIFF_SUMMARY]: {
+        name: Default.DOC_DIFF_SUMMARY,
+        description: "对比两版文档并生成变更摘要",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_DIFF_SUMMARY
+        },
+        hints: hints(PROMPT_DOC_DIFF_SUMMARY),
+      },
+      [Default.DOC_TRANSLATE]: {
+        name: Default.DOC_TRANSLATE,
+        description: "翻译文档（术语一致）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_TRANSLATE
+        },
+        hints: hints(PROMPT_DOC_TRANSLATE),
+      },
+      [Default.DOC_REDACTION_PLAN]: {
+        name: Default.DOC_REDACTION_PLAN,
+        description: "对外发布前脱敏计划（含 doc.redact 参数）",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_REDACTION_PLAN
+        },
+        hints: hints(PROMPT_DOC_REDACTION_PLAN),
       },
       [Default.NOVEL_INIT]: {
         name: Default.NOVEL_INIT,

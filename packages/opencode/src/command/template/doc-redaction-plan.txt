@@ -1,0 +1,14 @@
+先调用 `skill` 工具加载 `doc-redaction-plan`，并严格按技能契约输出。
+
+用户参数：
+$ARGUMENTS
+
+规则：
+- 如果参数里包含/看起来像文件路径（.md/.txt/.docx/.pptx/.xlsx/.pdf），先用 `doc.import` 导入再做计划。
+- 如果用户明确要对外分享/发布：强调“必须先运行 `doc.redact`”，并给出建议的 `doc.redact` 参数草案。
+
+然后（必须）：
+1) 在你生成完结构化 YAML 后，调用 `task` 工具使用 `docs` agent，把脱敏计划整理成可执行的“对外发布清单”（含推荐的 `doc.redact` 参数与注意事项）。
+2) 最终回复里同时包含两部分：
+   - Part A：结构化 YAML（完整保留）
+   - Part B：`docs` agent 生成的对外发布清单（Markdown）

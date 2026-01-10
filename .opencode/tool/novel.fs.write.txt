@@ -1,9 +1,0 @@
-Write a file inside the `novel/` directory.
-
-Modes:
-- create: create the file if it doesn't exist; otherwise do nothing and return "skipped".
-- overwrite: replace the file content (creates the file if missing).
-- append: append to the file (creates the file if missing).
-
-This tool creates parent directories automatically and rejects path traversal.
-

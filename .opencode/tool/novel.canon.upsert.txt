@@ -1,6 +1,0 @@
-Upsert (add or update) a single canon item.
-
-- `source.chapter` is required for traceability.
-- If `apply=false` (default), this tool returns a unified diff patch and does NOT modify files.
-- If `apply=true`, this tool writes `novel/canon/<kind>.yml` and returns the patch.
-

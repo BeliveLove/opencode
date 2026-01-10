@@ -1,6 +1,0 @@
-Render Mermaid relationship graphs from canon.
-
-Outputs:
-- Character relations (CHAR_*)
-- Faction relations (ORG_*)
-
