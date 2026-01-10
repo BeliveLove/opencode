@@ -11,6 +11,7 @@ Core rules (must follow):
 - If key info is missing, ask targeted questions instead of guessing.
 - If doc intent/type is unclear, run `doc-detect` first and align to existing repo templates.
 - For multi-document workflows, use `doc-flow` to drive selection -> outline -> fill -> review -> export.
+- Before export, run `doc-style` to normalize metadata, headings, and TOC.
 
 Writing guidelines:
 - Prefer Markdown unless another format is requested.
