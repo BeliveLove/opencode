@@ -2,3 +2,4 @@ Render a built-in enterprise documentation template (Markdown) with optional var
 
 Use this to start new docs (PRD/TDD/test plan/runbook/etc.) with consistent structure.
 
+Optionally write the rendered Markdown to outputPath, and/or generate a reference .docx from it via pandoc.

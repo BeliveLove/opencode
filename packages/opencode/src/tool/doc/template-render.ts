@@ -1,6 +1,49 @@
 import z from "zod"
+import path from "path"
+import fs from "fs/promises"
 import { Tool } from "../tool"
 import DESCRIPTION from "./template-render.txt"
+import { Pandoc } from "@/file/pandoc"
+import { Filesystem } from "@/util/filesystem"
+import { Instance } from "@/project/instance"
+
+async function ensureReadableFile(ctx: Tool.Context, filePath: string) {
+  if (!ctx.extra?.["bypassCwdCheck"] && !Filesystem.contains(Instance.directory, filePath)) {
+    const parentDir = path.dirname(filePath)
+    await ctx.ask({
+      permission: "external_directory",
+      patterns: [parentDir],
+      always: [parentDir + "/*"],
+      metadata: { filePath, parentDir },
+    })
+  }
+
+  await ctx.ask({
+    permission: "read",
+    patterns: [filePath],
+    always: ["*"],
+    metadata: {},
+  })
+}
+
+async function ensureWritableFile(ctx: Tool.Context, filePath: string) {
+  if (!ctx.extra?.["bypassCwdCheck"] && !Filesystem.contains(Instance.directory, filePath)) {
+    const parentDir = path.dirname(filePath)
+    await ctx.ask({
+      permission: "external_directory",
+      patterns: [parentDir],
+      always: [parentDir + "/*"],
+      metadata: { filePath, parentDir },
+    })
+  }
+
+  await ctx.ask({
+    permission: "edit",
+    patterns: [filePath],
+    always: ["*"],
+    metadata: { filePath },
+  })
+}
 
 type Template = {
   id: string
@@ -10,6 +53,34 @@ type Template = {
 }
 
 const TEMPLATES: Template[] = [
+  {
+    id: "doc.default",
+    version: "1.0.0",
+    title: "Document Template",
+    body: [
+      "# {{title}}",
+      "",
+      "- Owner: {{owner}}",
+      "- Date: {{date}}",
+      "- Status: {{status}}",
+      "- Version: {{version}}",
+      "",
+      "## Summary",
+      "",
+      "## Background",
+      "",
+      "## Goals / Non-goals",
+      "",
+      "## Scope",
+      "",
+      "## Details",
+      "",
+      "## Decisions",
+      "",
+      "## Risks & Open questions",
+      "",
+    ].join("\n"),
+  },
   {
     id: "tech.prd",
     version: "1.0.0",
@@ -382,8 +453,14 @@ export const DocTemplateRenderTool = Tool.define("doc.template.render", {
       .record(z.string(), z.string())
       .optional()
       .describe("Optional variable map to substitute in the template"),
+    outputPath: z.string().optional().describe("Optional path to write the rendered Markdown template"),
+    referenceDocxPath: z
+      .string()
+      .optional()
+      .describe("Optional path to write a reference .docx generated from the rendered template via pandoc"),
+    pandocArgs: z.array(z.string()).optional().describe("Optional extra pandoc arguments for reference docx generation"),
   }),
-  async execute(params) {
+  async execute(params, ctx) {
     const t = templateById.get(params.templateId)
     if (!t) {
       const available = Array.from(templateById.keys()).sort().join(", ")
@@ -391,12 +468,64 @@ export const DocTemplateRenderTool = Tool.define("doc.template.render", {
     }
 
     const output = renderTemplateBody(t.body, params.variables ?? {})
+    let outputPath: string | undefined
+    let referenceDocxPath: string | undefined
+    let pandocStdout = ""
+    let pandocStderr = ""
+    let pandocExitCode: number | undefined
+
+    if (params.outputPath) {
+      outputPath = params.outputPath
+      if (!path.isAbsolute(outputPath)) outputPath = path.join(process.cwd(), outputPath)
+      outputPath = path.resolve(outputPath)
+
+      await ensureWritableFile(ctx, outputPath)
+      await fs.mkdir(path.dirname(outputPath), { recursive: true })
+      await fs.writeFile(outputPath, output, "utf8")
+    }
+
+    if (params.referenceDocxPath) {
+      if (!outputPath) {
+        throw new Error("referenceDocxPath requires outputPath so the rendered template can be converted to docx.")
+      }
+      referenceDocxPath = params.referenceDocxPath
+      if (!path.isAbsolute(referenceDocxPath)) referenceDocxPath = path.join(process.cwd(), referenceDocxPath)
+      referenceDocxPath = path.resolve(referenceDocxPath)
+
+      await ensureReadableFile(ctx, outputPath)
+      await ensureWritableFile(ctx, referenceDocxPath)
+      await fs.mkdir(path.dirname(referenceDocxPath), { recursive: true })
+
+      const pandocPath = await Pandoc.filepath()
+      const args = [outputPath, "-o", referenceDocxPath]
+      if (params.pandocArgs?.length) args.push(...params.pandocArgs)
+      const proc = Bun.spawn([pandocPath, ...args], {
+        stdout: "pipe",
+        stderr: "pipe",
+        cwd: Instance.directory,
+        env: { ...process.env },
+      })
+      await proc.exited
+      pandocStdout = (await Bun.readableStreamToText(proc.stdout)).trim()
+      pandocStderr = (await Bun.readableStreamToText(proc.stderr)).trim()
+      pandocExitCode = proc.exitCode
+      if (proc.exitCode !== 0) {
+        const details = [pandocStderr, pandocStdout].filter(Boolean).join("\n")
+        throw new Error(`pandoc conversion failed (exit ${proc.exitCode})${details ? `:\n${details}` : ""}`)
+      }
+    }
+
     return {
       title: t.title,
       output,
       metadata: {
         templateId: t.id,
         version: t.version,
+        outputPath,
+        referenceDocxPath,
+        pandocExitCode,
+        pandocStdout,
+        pandocStderr,
       },
     }
   },
