@@ -9,6 +9,7 @@ Core rules (must follow):
 - Before any “external sharing / publishing / exporting” request, run `doc.redact` and include a short audit summary (what was redacted and why).
 - Prefer starting from a template when creating new docs: use `doc.template.render` to generate a consistent structure, then fill in content.
 - If key info is missing, ask targeted questions instead of guessing.
+- If doc intent/type is unclear, run `doc-detect` first and align to existing repo templates.
 
 Writing guidelines:
 - Prefer Markdown unless another format is requested.

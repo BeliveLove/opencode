@@ -15,6 +15,7 @@ import PROMPT_NOVEL_IDEA from "./template/novel-idea.txt"
 import PROMPT_NOVEL_POLISH from "./template/novel-polish.txt"
 import PROMPT_NOVEL_EXPORT from "./template/novel-export.txt"
 import PROMPT_DOC_OUTLINE from "./template/doc-outline.txt"
+import PROMPT_DOC_DETECT from "./template/doc-detect.txt"
 import PROMPT_DOC_FILL from "./template/doc-fill.txt"
 import PROMPT_DOC_REVIEW from "./template/doc-review.txt"
 import PROMPT_DOC_DIFF_SUMMARY from "./template/doc-diff-summary.txt"
@@ -70,6 +71,7 @@ export namespace Command {
     INIT: "init",
     REVIEW: "review",
     DOC_OUTLINE: "doc-outline",
+    DOC_DETECT: "doc-detect",
     DOC_FILL: "doc-fill",
     DOC_REVIEW: "doc-review",
     DOC_DIFF_SUMMARY: "doc-diff-summary",
@@ -116,6 +118,15 @@ export namespace Command {
           return PROMPT_DOC_OUTLINE
         },
         hints: hints(PROMPT_DOC_OUTLINE),
+      },
+      [Default.DOC_DETECT]: {
+        name: Default.DOC_DETECT,
+        description: "判断文档方向并推荐模板/骨架",
+        agent: "doc",
+        get template() {
+          return PROMPT_DOC_DETECT
+        },
+        hints: hints(PROMPT_DOC_DETECT),
       },
       [Default.DOC_FILL]: {
         name: Default.DOC_FILL,
