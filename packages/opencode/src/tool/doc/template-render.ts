@@ -508,7 +508,7 @@ export const DocTemplateRenderTool = Tool.define("doc.template.render", {
       await proc.exited
       pandocStdout = (await Bun.readableStreamToText(proc.stdout)).trim()
       pandocStderr = (await Bun.readableStreamToText(proc.stderr)).trim()
-      pandocExitCode = proc.exitCode
+      pandocExitCode = proc.exitCode ?? undefined
       if (proc.exitCode !== 0) {
         const details = [pandocStderr, pandocStdout].filter(Boolean).join("\n")
         throw new Error(`pandoc conversion failed (exit ${proc.exitCode})${details ? `:\n${details}` : ""}`)
