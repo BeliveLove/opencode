@@ -12,6 +12,8 @@
   qa.test_plan, ops.runbook, ops.postmortem, security.threat_model,
   eng.release_notes, mgmt.meeting_minutes, mgmt.weekly_report, legal.contract_review_notes.
 - `doc-style` 是 skill，必须在填充正文后调用以整理样式与元信息。
+- 如果输入是 .doc/.docx 且需要样式统一：先用 `doc.convert` 转成 .md，再走 `doc-style`，最后再 `doc.convert` 回 .docx。
+- 如果输入是 .md，直接 `doc-style` 后再 `doc.convert` 到 .docx。
 
 流程（必须按顺序执行）：
 1) 输出 `doc.flow.v1` 的 YAML（包含领域 + 文档清单 + 推荐项 + 缺失信息）。
@@ -24,7 +26,9 @@
 6) 询问并收集样式与元信息（字体/字号/行距/目录层级/作者/版本/日期/状态/是否提供 reference docx）。如用户未提供，直接使用默认样式并说明默认值。
 7) 先调用 `skill` 工具加载 `doc-style`，再统一整理（元信息 + 标题层级 + 目录 + 排版），输出 styled_markdown。
 8) 汇总 styled_markdown 并执行 `doc-review`，给出阻塞项/缺失项。
-9) 用户确认后，若需要导出 Word：将最终 Markdown 写入文件，再用 `doc.convert` 转成 .docx（附带 toc 与 reference docx）。
+9) 用户确认后，若需要导出 Word：
+   - 输入为 .doc/.docx：`doc.convert` docx->md -> `doc-style` -> `doc.convert` md->docx（附带 toc 与 reference docx）。
+   - 输入为 .md：`doc-style` -> `doc.convert` md->docx（附带 toc 与 reference docx）。
 10) 如涉及对外发布/分享，导出前先运行 `doc.redact`。
 
 输出要求：每个阶段都清晰标注（Phase A/B/C...），多文档输出需按 doc_type 分组。
