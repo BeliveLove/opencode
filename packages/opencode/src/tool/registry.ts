@@ -15,6 +15,7 @@ import { DocImportTool } from "./doc/import"
 import { DocConvertTool } from "./doc/convert"
 import { DocRedactTool } from "./doc/redact"
 import { DocTemplateRenderTool } from "./doc/template-render"
+import { DocDiagramRenderTool } from "./doc/diagram-render"
 import { NovelFsReadTool } from "./novel/fs-read"
 import { NovelFsWriteTool } from "./novel/fs-write"
 import { NovelFsDiffTool } from "./novel/fs-diff"
@@ -129,6 +130,7 @@ export namespace ToolRegistry {
       DocConvertTool,
       DocRedactTool,
       DocTemplateRenderTool,
+      DocDiagramRenderTool,
       NovelFsReadTool,
       NovelFsWriteTool,
       NovelFsDiffTool,

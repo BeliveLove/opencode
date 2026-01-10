@@ -1,0 +1,9 @@
+Render Mermaid diagrams from a Markdown file into images and replace code blocks with image links.
+
+Input should be a Markdown file that contains ```mermaid code blocks.
+The tool will render each Mermaid block into an image (png or svg) using the `mmdc` CLI,
+write the images to `outputDir`, and replace the Mermaid blocks with image references.
+
+If `mmdc` is not installed, install it first:
+- npm i -g @mermaid-js/mermaid-cli
+- or bun add -g @mermaid-js/mermaid-cli
