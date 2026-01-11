@@ -6,6 +6,7 @@ import DESCRIPTION from "./diagram-render.txt"
 import { Instance } from "@/project/instance"
 import { Filesystem } from "@/util/filesystem"
 import { extractDocStylePayload } from "./style"
+import { ensureMermaidCli } from "./mermaid-cli"
 
 async function ensureReadableFile(ctx: Tool.Context, filePath: string) {
   if (!ctx.extra?.["bypassCwdCheck"] && !Filesystem.contains(Instance.directory, filePath)) {
@@ -78,17 +79,7 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
       throw new Error(`Input file not found: ${inputPath}`)
     }
 
-    const mmdcPath = Bun.which("mmdc")
-    if (!mmdcPath) {
-      throw new Error(
-        [
-          "Mermaid CLI (mmdc) not found.",
-          "Install it first:",
-          "- npm i -g @mermaid-js/mermaid-cli",
-          "- or bun add -g @mermaid-js/mermaid-cli",
-        ].join("\n"),
-      )
-    }
+    const mmdcPath = await ensureMermaidCli()
 
     await fs.mkdir(outputDir, { recursive: true })
 

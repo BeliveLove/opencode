@@ -8,6 +8,7 @@ import { Filesystem } from "@/util/filesystem"
 import { Instance } from "@/project/instance"
 import { extractDocStylePayload } from "./style"
 import { ZipReader, ZipWriter, BlobReader, BlobWriter } from "@zip.js/zip.js"
+import { ensureMermaidCli } from "./mermaid-cli"
 
 async function ensureReadableFile(ctx: Tool.Context, filePath: string) {
   if (!ctx.extra?.["bypassCwdCheck"] && !Filesystem.contains(Instance.directory, filePath)) {
@@ -265,17 +266,7 @@ async function renderMermaidBlocks(
   outputDir: string,
   diagramPrefix: string,
 ) {
-  const mmdcPath = Bun.which("mmdc")
-  if (!mmdcPath) {
-    throw new Error(
-      [
-        "Mermaid CLI (mmdc) not found.",
-        "Install it first:",
-        "- npm i -g @mermaid-js/mermaid-cli",
-        "- or bun add -g @mermaid-js/mermaid-cli",
-      ].join("\n"),
-    )
-  }
+  const mmdcPath = await ensureMermaidCli()
 
   await fs.mkdir(outputDir, { recursive: true })
   const mermaidRegex = /```mermaid\\s*([\\s\\S]*?)```/g
