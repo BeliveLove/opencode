@@ -1,4 +1,4 @@
-import { BusEvent } from "@/bus/bus-event"
+﻿import { BusEvent } from "@/bus/bus-event"
 import z from "zod"
 import { Config } from "../config/config"
 import { Instance } from "../project/instance"
@@ -114,7 +114,7 @@ export namespace Command {
       },
       [Default.DOC_OUTLINE]: {
         name: Default.DOC_OUTLINE,
-        description: "生成文档大纲（含来源/缺口）",
+        description: "Generate doc outline (sources + gaps)",
         agent: "doc",
         get template() {
           return PROMPT_DOC_OUTLINE
@@ -123,7 +123,7 @@ export namespace Command {
       },
       [Default.DOC_DETECT]: {
         name: Default.DOC_DETECT,
-        description: "判断文档方向并推荐模板/骨架",
+        description: "Detect doc intent/type and recommend template",
         agent: "doc",
         get template() {
           return PROMPT_DOC_DETECT
@@ -132,7 +132,7 @@ export namespace Command {
       },
       [Default.DOC_FLOW]: {
         name: Default.DOC_FLOW,
-        description: "文档流程向导（多文档）",
+        description: "Doc workflow: detect -> outline -> fill -> review -> export",
         agent: "doc",
         get template() {
           return PROMPT_DOC_FLOW
@@ -141,7 +141,7 @@ export namespace Command {
       },
       [Default.DOC_FILL]: {
         name: Default.DOC_FILL,
-        description: "按模板填充正文（不编造）",
+        description: "Fill template without inventing facts",
         agent: "doc",
         get template() {
           return PROMPT_DOC_FILL
@@ -150,7 +150,7 @@ export namespace Command {
       },
       [Default.DOC_REVIEW]: {
         name: Default.DOC_REVIEW,
-        description: "文档审阅（阻塞项/修复建议）",
+        description: "Review doc and list issues + fixes",
         agent: "doc",
         get template() {
           return PROMPT_DOC_REVIEW
@@ -159,7 +159,7 @@ export namespace Command {
       },
       [Default.DOC_DIFF_SUMMARY]: {
         name: Default.DOC_DIFF_SUMMARY,
-        description: "对比两版文档并生成变更摘要",
+        description: "Summarize changes between two doc versions",
         agent: "doc",
         get template() {
           return PROMPT_DOC_DIFF_SUMMARY
@@ -168,7 +168,7 @@ export namespace Command {
       },
       [Default.DOC_TRANSLATE]: {
         name: Default.DOC_TRANSLATE,
-        description: "翻译文档（术语一致）",
+        description: "Translate document with terminology consistency",
         agent: "doc",
         get template() {
           return PROMPT_DOC_TRANSLATE
@@ -177,7 +177,7 @@ export namespace Command {
       },
       [Default.DOC_REDACTION_PLAN]: {
         name: Default.DOC_REDACTION_PLAN,
-        description: "对外发布前脱敏计划（含 doc.redact 参数）",
+        description: "Plan redaction before external release",
         agent: "doc",
         get template() {
           return PROMPT_DOC_REDACTION_PLAN
@@ -186,7 +186,7 @@ export namespace Command {
       },
       [Default.DOC_CONVERT]: {
         name: Default.DOC_CONVERT,
-        description: "文档格式转换（pandoc）",
+        description: "Convert document formats (pandoc)",
         agent: "doc",
         get template() {
           return PROMPT_DOC_CONVERT
@@ -195,7 +195,7 @@ export namespace Command {
       },
       [Default.NOVEL_INIT]: {
         name: Default.NOVEL_INIT,
-        description: "初始化小说工程目录（novels/<novel_id>/）",
+        description: "Initialize novel project structure",
         get template() {
           return PROMPT_NOVEL_INIT
         },
@@ -203,7 +203,7 @@ export namespace Command {
       },
       [Default.NOVEL_LIST]: {
         name: Default.NOVEL_LIST,
-        description: "列出小说工程并显示当前 active",
+        description: "List novel projects and show active",
         get template() {
           return PROMPT_NOVEL_LIST
         },
@@ -211,7 +211,7 @@ export namespace Command {
       },
       [Default.NOVEL_USE]: {
         name: Default.NOVEL_USE,
-        description: "切换当前 active 小说（写入 novels/.active）",
+        description: "Switch active novel project",
         get template() {
           return PROMPT_NOVEL_USE
         },
@@ -219,7 +219,7 @@ export namespace Command {
       },
       [Default.NOVEL_PLAN]: {
         name: Default.NOVEL_PLAN,
-        description: "生成章纲+场景卡并写入 outlines/",
+        description: "Create chapter outline and scene cards",
         get template() {
           return PROMPT_NOVEL_PLAN
         },
@@ -227,7 +227,7 @@ export namespace Command {
       },
       [Default.NOVEL_DRAFT]: {
         name: Default.NOVEL_DRAFT,
-        description: "按场景卡产出正文并写入 chapters/",
+        description: "Draft chapter content from scene cards",
         get template() {
           return PROMPT_NOVEL_DRAFT
         },
@@ -235,7 +235,7 @@ export namespace Command {
       },
       [Default.NOVEL_CHECK]: {
         name: Default.NOVEL_CHECK,
-        description: "对账 canon/时间线/伏笔，输出问题清单与最小修复方案",
+        description: "Check canon/timeline/foreshadow issues",
         get template() {
           return PROMPT_NOVEL_CHECK
         },
@@ -243,7 +243,7 @@ export namespace Command {
       },
       [Default.NOVEL_IDEA]: {
         name: Default.NOVEL_IDEA,
-        description: "生成题材/设定草案并写入 notes/ideas.md",
+        description: "Generate novel ideas and write to notes",
         get template() {
           return PROMPT_NOVEL_IDEA
         },
@@ -251,7 +251,7 @@ export namespace Command {
       },
       [Default.NOVEL_POLISH]: {
         name: Default.NOVEL_POLISH,
-        description: "润色/节奏调整（保守/重写两档）",
+        description: "Polish chapter text (light + rewrite)",
         get template() {
           return PROMPT_NOVEL_POLISH
         },
@@ -259,7 +259,7 @@ export namespace Command {
       },
       [Default.NOVEL_EXPORT]: {
         name: Default.NOVEL_EXPORT,
-        description: "导出单章/全书（Markdown 拼接）",
+        description: "Export chapters/book to Markdown",
         get template() {
           return PROMPT_NOVEL_EXPORT
         },
@@ -272,7 +272,7 @@ export namespace Command {
         name,
         agent: command.agent,
         model: command.model,
-        description: command.description,
+        description: "Export chapters/book to Markdown",
         get template() {
           return command.template
         },
@@ -284,7 +284,7 @@ export namespace Command {
       result[name] = {
         name,
         mcp: true,
-        description: prompt.description,
+        description: "Export chapters/book to Markdown",
         get template() {
           // since a getter can't be async we need to manually return a promise here
           return new Promise<string>(async (resolve, reject) => {
@@ -318,3 +318,5 @@ export namespace Command {
     return state().then((x) => Object.values(x))
   }
 }
+
+

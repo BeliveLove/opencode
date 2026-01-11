@@ -1,4 +1,4 @@
-将当前 active 小说切换为指定的 `<novel_id>`。
+﻿将当前 active 小说切换为指定的 `<novel_id>`。
 
 输入：
 

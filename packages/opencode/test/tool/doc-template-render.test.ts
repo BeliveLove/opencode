@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+﻿import { describe, expect, test } from "bun:test"
 import path from "path"
 import fs from "fs/promises"
 import { DocTemplateRenderTool } from "../../src/tool/doc/template-render"
@@ -64,7 +64,7 @@ async function createPandocStub(dir: string) {
   return filePath
 }
 
-describe("tool.doc.template.render", () => {
+describe("tool.doc_template_render", () => {
   test("renders a known template and substitutes variables", async () => {
     const tool = await DocTemplateRenderTool.init()
     const result = await tool.execute(
@@ -136,3 +136,4 @@ describe("tool.doc.template.render", () => {
     })
   })
 })
+

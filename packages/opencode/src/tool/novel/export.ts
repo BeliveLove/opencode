@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import path from "path"
 import z from "zod"
 import { Tool } from "../tool"
@@ -10,7 +10,7 @@ function isChapterFile(name: string) {
   return /^CH_\d+_\d+\.md$/i.test(name)
 }
 
-export const NovelExportTool = Tool.define("novel.export", {
+export const NovelExportTool = Tool.define("novel_export", {
   description: DESCRIPTION,
   parameters: z.object({
     output: z.string().default("export/book.md").describe("Output path relative to novel root"),
@@ -45,3 +45,4 @@ export const NovelExportTool = Tool.define("novel.export", {
     }
   },
 })
+

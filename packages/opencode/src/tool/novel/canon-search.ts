@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./canon-search.txt"
 import { CANON_KINDS, type CanonKind, readCanon } from "../../novel/canon"
@@ -9,7 +9,7 @@ function labelForItem(item: Record<string, any>) {
   return (item.name ?? item.title ?? item.promise ?? item.term ?? item.text ?? "").toString()
 }
 
-export const NovelCanonSearchTool = Tool.define("novel.canon.search", {
+export const NovelCanonSearchTool = Tool.define("novel_canon_search", {
   description: DESCRIPTION,
   parameters: z.object({
     kind: z.enum(CANON_KINDS as [CanonKind, ...CanonKind[]]).describe("Canon kind"),
@@ -38,3 +38,4 @@ export const NovelCanonSearchTool = Tool.define("novel.canon.search", {
     }
   },
 })
+

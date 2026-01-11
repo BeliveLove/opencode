@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import z from "zod"
 import YAML from "yaml"
 import { Tool } from "../tool"
@@ -10,16 +10,16 @@ import { askEdit } from "./util"
 type Source = { chapter: string; quote?: string }
 
 function assertObject(value: unknown): asserts value is Record<string, any> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("item 必须是对象")
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("item must be an object")
 }
 
 function assertSource(source: Source) {
   if (!source?.chapter || typeof source.chapter !== "string" || !source.chapter.trim()) {
-    throw new Error("source.chapter 为必填字段")
+    throw new Error("source.chapter is required")
   }
 }
 
-export const NovelCanonUpsertTool = Tool.define("novel.canon.upsert", {
+export const NovelCanonUpsertTool = Tool.define("novel_canon_upsert", {
   description: DESCRIPTION,
   parameters: z.object({
     kind: z.enum(CANON_KINDS as [CanonKind, ...CanonKind[]]).describe("Canon kind"),
@@ -89,3 +89,4 @@ export const NovelCanonUpsertTool = Tool.define("novel.canon.upsert", {
     }
   },
 })
+

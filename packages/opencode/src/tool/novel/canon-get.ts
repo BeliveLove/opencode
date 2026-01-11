@@ -1,10 +1,10 @@
-import z from "zod"
+﻿import z from "zod"
 import YAML from "yaml"
 import { Tool } from "../tool"
 import DESCRIPTION from "./canon-get.txt"
 import { CANON_KINDS, type CanonKind, readCanon } from "../../novel/canon"
 
-export const NovelCanonGetTool = Tool.define("novel.canon.get", {
+export const NovelCanonGetTool = Tool.define("novel_canon_get", {
   description: DESCRIPTION,
   parameters: z.object({
     kind: z.enum(CANON_KINDS as [CanonKind, ...CanonKind[]]).describe("Canon kind"),
@@ -21,3 +21,4 @@ export const NovelCanonGetTool = Tool.define("novel.canon.get", {
     }
   },
 })
+

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+﻿import { describe, expect, test } from "bun:test"
 import path from "path"
 import { tmpdir } from "../fixture/fixture"
 import { Instance } from "../../src/project/instance"
@@ -25,7 +25,7 @@ async function writeZipFile(filePath: string, entries: Record<string, string>) {
   await Bun.write(filePath, new Uint8Array(await blob.arrayBuffer()))
 }
 
-describe("tool.doc.import", () => {
+describe("tool.doc_import", () => {
   test("extracts docx text from word/document.xml", async () => {
     await using tmp = await tmpdir({
       init: async (dir) => {
@@ -160,3 +160,4 @@ describe("tool.doc.import", () => {
     })
   })
 })
+

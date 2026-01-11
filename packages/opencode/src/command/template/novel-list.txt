@@ -1,4 +1,4 @@
-列出当前项目下的小说工程（`novels/<novel_id>/`），并展示当前 active（来自 `novels/.active`）。
+﻿列出当前项目下的小说工程（`novels/<novel_id>/`），并展示当前 active（来自 `novels/.active`）。
 
 执行：
 

@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import path from "path"
 import { Tool } from "../tool"
 import DESCRIPTION from "./import.txt"
@@ -161,7 +161,7 @@ async function ensureReadableFile(ctx: Tool.Context, filePath: string) {
   })
 }
 
-export const DocImportTool = Tool.define("doc.import", {
+export const DocImportTool = Tool.define("doc_import", {
   description: DESCRIPTION,
   parameters: z.object({
     filePath: z.string().describe("Path to the file to import (absolute or relative)"),
@@ -255,3 +255,4 @@ export const DocImportTool = Tool.define("doc.import", {
     }
   },
 })
+

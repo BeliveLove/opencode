@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import path from "path"
 import z from "zod"
 import YAML from "yaml"
@@ -20,7 +20,7 @@ function groupByPrefix(ids: string[]) {
   return groups
 }
 
-export const NovelReportChapterTool = Tool.define("novel.report.chapter", {
+export const NovelReportChapterTool = Tool.define("novel_report_chapter", {
   description: DESCRIPTION,
   parameters: z.object({
     chapterId: z.string().describe("Chapter id (e.g. CH_01_003)"),
@@ -57,18 +57,18 @@ export const NovelReportChapterTool = Tool.define("novel.report.chapter", {
     }
 
     const output = [
-      `# 章节对账报告：${params.chapterId}`,
+      `# Chapter canon report: ${params.chapterId}`,
       "",
-      "## 结构化摘要",
+      "## Structured summary",
       "```yml",
       YAML.stringify(summary).trimEnd(),
       "```",
       "",
-      "## 缺失引用（需要写回 canon/）",
-      missingRefs.length ? missingRefs.map((x) => `- ${x}`).join("\n") : "- 无",
+      "## Missing refs (should be added to canon/)",
+      missingRefs.length ? missingRefs.map((x) => `- ${x}`).join("\n") : "- none",
       "",
-      "## 文本中出现但未入库的 ID 候选（建议检查是否新增设定/人物/地点/物品）",
-      missingCandidates.length ? missingCandidates.map((x) => `- ${x}`).join("\n") : "- 无",
+      "## IDs referenced in text but not in canon (review for new items)",
+      missingCandidates.length ? missingCandidates.map((x) => `- ${x}`).join("\n") : "- none",
     ].join("\n")
 
     return {
@@ -78,3 +78,4 @@ export const NovelReportChapterTool = Tool.define("novel.report.chapter", {
     }
   },
 })
+

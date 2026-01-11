@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import path from "path"
 import z from "zod"
 import YAML from "yaml"
@@ -15,7 +15,7 @@ async function safeParseYaml(content: string) {
   }
 }
 
-export const NovelProjectListTool = Tool.define("novel.project.list", {
+export const NovelProjectListTool = Tool.define("novel_project_list", {
   description: DESCRIPTION,
   parameters: z.object({}),
   async execute(_params, ctx) {
@@ -48,10 +48,11 @@ export const NovelProjectListTool = Tool.define("novel.project.list", {
       .catch(() => false)
 
     return {
-      title: "novel.project.list",
+      title: "novel_project_list",
       output: YAML.stringify({ active: activeId, novels, legacy: legacyExists }).trimEnd(),
       metadata: { active: activeId, count: novels.length, legacy: legacyExists },
     }
   },
 })
+
 

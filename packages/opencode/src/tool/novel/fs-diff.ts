@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./fs-diff.txt"
@@ -6,7 +6,7 @@ import { unifiedDiff } from "../../novel/diff"
 import { git, isTracked, isWorktreeRef, normalizeRef, requireGitRepo } from "../../novel/git"
 import { resolveNovelPath } from "../../novel/paths"
 
-export const NovelFsDiffTool = Tool.define("novel.fs.diff", {
+export const NovelFsDiffTool = Tool.define("novel_fs_diff", {
   description: DESCRIPTION,
   parameters: z.object({
     path: z.string().describe("Path relative to novel root"),
@@ -58,3 +58,4 @@ export const NovelFsDiffTool = Tool.define("novel.fs.diff", {
     }
   },
 })
+

@@ -1,11 +1,11 @@
-import z from "zod"
+﻿import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./graph-timeline.txt"
 import { CanonKind, readCanon } from "../../novel/canon"
 import { resolveNovelDir } from "../../novel/paths"
 import { askReadPattern } from "./util"
 
-export const NovelGraphTimelineTool = Tool.define("novel.graph.timeline", {
+export const NovelGraphTimelineTool = Tool.define("novel_graph_timeline", {
   description: DESCRIPTION,
   parameters: z.object({
     novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
@@ -19,7 +19,7 @@ export const NovelGraphTimelineTool = Tool.define("novel.graph.timeline", {
     )
 
     const lines: string[] = []
-    lines.push("# 时间线（Mermaid）")
+    lines.push("# Timeline (Mermaid)")
     lines.push("")
     lines.push("```mermaid")
     lines.push("graph TD")
@@ -32,9 +32,10 @@ export const NovelGraphTimelineTool = Tool.define("novel.graph.timeline", {
     }
     lines.push("```")
     return {
-      title: "novel.graph.timeline",
+      title: "novel_graph_timeline",
       output: lines.join("\n"),
       metadata: { eventCount: sorted.length },
     }
   },
 })
+

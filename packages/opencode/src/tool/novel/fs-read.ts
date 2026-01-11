@@ -1,11 +1,11 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./fs-read.txt"
 import { resolveNovelPath } from "../../novel/paths"
 import { askRead } from "./util"
 
-export const NovelFsReadTool = Tool.define("novel.fs.read", {
+export const NovelFsReadTool = Tool.define("novel_fs_read", {
   description: DESCRIPTION,
   parameters: z.object({
     path: z.string().describe("Path relative to novel root (e.g. chapters/CH_01_001.md)"),
@@ -24,3 +24,4 @@ export const NovelFsReadTool = Tool.define("novel.fs.read", {
     }
   },
 })
+

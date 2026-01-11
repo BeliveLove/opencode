@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import { Tool } from "../tool"
 import DESCRIPTION from "./graph-relations.txt"
 import { CanonKind, readCanon } from "../../novel/canon"
@@ -9,7 +9,7 @@ function labelNode(id: string, name?: string) {
   return name ? `${id} ${name}` : id
 }
 
-export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
+export const NovelGraphRelationsTool = Tool.define("novel_graph_relations", {
   description: DESCRIPTION,
   parameters: z.object({
     novelId: z.string().optional().describe("Optional novel id override (under novels/<novelId>/)"),
@@ -76,16 +76,16 @@ export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
     }
 
     const lines: string[] = []
-    lines.push("# 关系图")
+    lines.push("# Relations")
     lines.push("")
-    lines.push("## 人物关系（CHAR）")
+    lines.push("## Character relations (CHAR)")
     lines.push("```mermaid")
     lines.push("graph LR")
     for (const [id, label] of charNodes) lines.push(`  ${id}[${label}]`)
     lines.push(...charEdges)
     lines.push("```")
     lines.push("")
-    lines.push("## 势力关系（ORG）")
+    lines.push("## Faction relations (ORG)")
     lines.push("```mermaid")
     lines.push("graph TD")
     for (const [id, label] of orgNodes) lines.push(`  ${id}[${label}]`)
@@ -93,9 +93,10 @@ export const NovelGraphRelationsTool = Tool.define("novel.graph.relations", {
     lines.push("```")
 
     return {
-      title: "novel.graph.relations",
+      title: "novel_graph_relations",
       output: lines.join("\n"),
       metadata: { characterCount: characters.length, factionCount: factions.length, relationCount: charEdges.length + orgEdges.length },
     }
   },
 })
+

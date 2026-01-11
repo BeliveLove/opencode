@@ -1,4 +1,4 @@
-先调用 `skill` 工具加载 `doc-fill`，并严格按技能契约输出。
+﻿先调用 `skill` 工具加载 `doc-fill`，并严格按技能契约输出。
 
 用户参数：
 $ARGUMENTS

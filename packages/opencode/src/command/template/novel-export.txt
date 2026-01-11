@@ -1,4 +1,4 @@
-将当前小说（`novels/<active>/`）下的章节导出为一本合并后的 Markdown。
+﻿将当前小说（`novels/<active>/`）下的章节导出为一本合并后的 Markdown。
 
 执行：
 

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+﻿import { describe, expect, test } from "bun:test"
 import path from "path"
 import fs from "fs/promises"
 import { tmpdir } from "../fixture/fixture"
@@ -64,7 +64,7 @@ async function createPandocStub(dir: string) {
   return filePath
 }
 
-describe("tool.doc.convert", () => {
+describe("tool.doc_convert", () => {
   test("converts using pandoc binary", async () => {
     const original = process.env.OPENCODE_PANDOC_BIN
     await using tmp = await tmpdir({
@@ -103,3 +103,4 @@ describe("tool.doc.convert", () => {
     })
   })
 })
+

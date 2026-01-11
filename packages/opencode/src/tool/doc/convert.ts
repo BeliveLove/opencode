@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import path from "path"
 import fs from "fs/promises"
 import { Tool } from "../tool"
@@ -832,3 +832,4 @@ export const DocConvertTool = Tool.define("doc.convert", {
     }
   },
 })
+

@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import path from "path"
 import z from "zod"
 import { createTwoFilesPatch } from "diff"
@@ -8,7 +8,7 @@ import { resolveNovelPath } from "../../novel/paths"
 import { askEdit } from "./util"
 import { trimDiff } from "../edit"
 
-export const NovelFsWriteTool = Tool.define("novel.fs.write", {
+export const NovelFsWriteTool = Tool.define("novel_fs_write", {
   description: DESCRIPTION,
   parameters: z.object({
     path: z.string().describe("Path relative to novel root (e.g. canon/characters.yml)"),
@@ -60,3 +60,4 @@ export const NovelFsWriteTool = Tool.define("novel.fs.write", {
     }
   },
 })
+

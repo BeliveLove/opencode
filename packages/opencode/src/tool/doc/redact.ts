@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import YAML from "yaml"
 import { Tool } from "../tool"
 import DESCRIPTION from "./redact.txt"
@@ -42,7 +42,7 @@ function uniqueSamples(samples: string[], limit = 5) {
   return out
 }
 
-export const DocRedactTool = Tool.define("doc.redact", {
+export const DocRedactTool = Tool.define("doc_redact", {
   description: DESCRIPTION,
   parameters: z.object({
     text: z.string().describe("Input text (plain text or Markdown)"),
@@ -113,9 +113,10 @@ export const DocRedactTool = Tool.define("doc.redact", {
     }
 
     return {
-      title: "doc.redact",
+      title: "doc_redact",
       output: ["```yml", YAML.stringify(report).trimEnd(), "```", "", output.trimEnd()].join("\n"),
       metadata: { counts },
     }
   },
 })
+

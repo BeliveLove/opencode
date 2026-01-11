@@ -46,7 +46,7 @@ async function ensureWritableDir(ctx: Tool.Context, dirPath: string) {
   })
 }
 
-export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
+export const DocDiagramRenderTool = Tool.define("doc_diagram_render", {
   description: DESCRIPTION,
   parameters: z.object({
     inputPath: z.string().describe("Path to the input Markdown file"),
@@ -194,5 +194,6 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
     }
   },
 })
+
 
 

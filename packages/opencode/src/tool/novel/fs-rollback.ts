@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import z from "zod"
 import { createTwoFilesPatch } from "diff"
 import { Tool } from "../tool"
@@ -14,7 +14,7 @@ async function gitShow(ref: string, relToProjectPosix: string) {
   return res.stdout
 }
 
-export const NovelFsRollbackTool = Tool.define("novel.fs.rollback", {
+export const NovelFsRollbackTool = Tool.define("novel_fs_rollback", {
   description: DESCRIPTION,
   parameters: z.object({
     path: z.string().describe("Path relative to novel root"),
@@ -27,7 +27,7 @@ export const NovelFsRollbackTool = Tool.define("novel.fs.rollback", {
     const ref = normalizeRef(params.ref, "HEAD")
 
     const tracked = await isTracked(resolved.relToProjectPosix)
-    if (!tracked) throw new Error(`文件未被 git 跟踪，无法回滚：${resolved.relToProjectPosix}`)
+    if (!tracked) throw new Error(`鏂囦欢鏈 git 璺熻釜锛屾棤娉曞洖婊氾細${resolved.relToProjectPosix}`)
 
     const before = await fs.readFile(resolved.abs, "utf8").catch(() => "")
     const after = await gitShow(ref, resolved.relToProjectPosix)
@@ -50,3 +50,4 @@ export const NovelFsRollbackTool = Tool.define("novel.fs.rollback", {
     }
   },
 })
+

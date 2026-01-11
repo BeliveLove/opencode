@@ -1,4 +1,4 @@
-import fs from "fs/promises"
+﻿import fs from "fs/promises"
 import path from "path"
 import z from "zod"
 import YAML from "yaml"
@@ -24,7 +24,7 @@ function isStringArray(v: any): v is string[] {
   return Array.isArray(v) && v.every((x) => typeof x === "string")
 }
 
-export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
+export const NovelCanonValidateTool = Tool.define("novel_canon_validate", {
   description: DESCRIPTION,
   parameters: z.object({
     chapterId: z.string().optional().describe("Optional chapter id to validate refs (e.g. CH_01_003)"),
@@ -46,7 +46,7 @@ export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
 
     if (!dir) {
       return {
-        title: "novel.canon.validate",
+        title: "novel_canon_validate",
         output: YAML.stringify({ ok: false, issues }).trimEnd(),
         metadata: { ok: false, issueCount: issues.length },
       }
@@ -188,9 +188,10 @@ export const NovelCanonValidateTool = Tool.define("novel.canon.validate", {
 
     const ok = issues.every((x) => x.level !== "error")
     return {
-      title: "novel.canon.validate",
+      title: "novel_canon_validate",
       output: YAML.stringify({ ok, issues }).trimEnd(),
       metadata: { ok, issueCount: issues.length },
     }
   },
 })
+

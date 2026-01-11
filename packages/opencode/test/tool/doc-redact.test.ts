@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+﻿import { describe, expect, test } from "bun:test"
 import YAML from "yaml"
 import { DocRedactTool } from "../../src/tool/doc/redact"
 
@@ -18,7 +18,7 @@ function parseYamlReport(output: string) {
   return YAML.parse(m![1]!)
 }
 
-describe("tool.doc.redact", () => {
+describe("tool.doc_redact", () => {
   test("masks email/phone/cn_id and valid bank cards; leaves invalid bank cards", async () => {
     const tool = await DocRedactTool.init()
     const input = [
@@ -60,4 +60,5 @@ describe("tool.doc.redact", () => {
     expect(result.output).toContain("[REDACTED:bank_card]")
   })
 })
+
 

@@ -1,4 +1,4 @@
-先调用 `skill` 工具加载 `novel-polish`，并严格按技能契约输出。
+﻿先调用 `skill` 工具加载 `novel-polish`，并严格按技能契约输出。
 
 目标章节：
 

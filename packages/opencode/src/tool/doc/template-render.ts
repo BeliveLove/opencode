@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import path from "path"
 import fs from "fs/promises"
 import { Tool } from "../tool"
@@ -808,7 +808,7 @@ function renderTemplateBody(body: string, variables: Record<string, string>) {
   })
 }
 
-export const DocTemplateRenderTool = Tool.define("doc.template.render", {
+export const DocTemplateRenderTool = Tool.define("doc_template_render", {
   description: DESCRIPTION,
   parameters: z.object({
     templateId: z.string().describe("Template id (e.g., 'tech.prd', 'tech.tdd', 'qa.test_plan')"),
@@ -892,3 +892,4 @@ export const DocTemplateRenderTool = Tool.define("doc.template.render", {
     }
   },
 })
+
