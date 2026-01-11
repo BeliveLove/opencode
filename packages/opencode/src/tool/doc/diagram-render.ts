@@ -85,16 +85,59 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
 
     const rawMarkdown = await inputFile.text()
     const styled = extractDocStylePayload(rawMarkdown)
-    const markdown = styled?.styledMarkdown ?? rawMarkdown
-    const mermaidRegex = /```mermaid\s*([\s\S]*?)```/g
-    let match: RegExpExecArray | null
-    let index = 0
-    let updated = markdown
+  const markdown = styled?.styledMarkdown ?? rawMarkdown
+  const mermaidRegex = /```mermaid\s*([\s\S]*?)```/g
+  let match: RegExpExecArray | null
+  let index = 0
+  let updated = markdown
+  const headings: { level: number; text: string; index: number }[] = []
+  let inFence = false
+  let fenceMarker = ""
+  let offset = 0
 
-    while ((match = mermaidRegex.exec(markdown)) !== null) {
-      index += 1
-      const mermaidSource = match[1].trim()
-      const diagramBase = `diagram-${index}`
+  for (const line of markdown.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith("```")) {
+      if (!inFence) {
+        inFence = true
+        fenceMarker = "```"
+      } else if (trimmed.startsWith(fenceMarker)) {
+        inFence = false
+      }
+      offset += line.length + 1
+      continue
+    }
+    if (!inFence) {
+      const headingMatch = /^(#{1,6})\s+(.+)$/.exec(line)
+      if (headingMatch) {
+        headings.push({
+          level: headingMatch[1].length,
+          text: headingMatch[2].trim().replace(/\s+#\s*$/, ""),
+          index: offset,
+        })
+      }
+    }
+    offset += line.length + 1
+  }
+
+  const normalizeHeadingForCaption = (text: string) => {
+    let value = text.trim()
+    value = value.replace(/^\d+(?:\.\d+)*\s*/, "")
+    value = value.replace(/^[：:.。\-\s]+/, "")
+    value = value.trim()
+    if (!value) return ""
+    if (!value.endsWith("图") && !value.endsWith("图示") && !value.endsWith("示意")) {
+      return `${value}图`
+    }
+    return value
+  }
+
+  const sanitizeAltText = (text: string) => text.replace(/[\[\]]/g, "").trim()
+
+  while ((match = mermaidRegex.exec(markdown)) !== null) {
+    index += 1
+    const mermaidSource = match[1].trim()
+    const diagramBase = `diagram-${index}`
       const mmdPath = path.join(outputDir, `${diagramBase}.mmd`)
       const imgExt = params.format ?? "png"
       const imgPath = path.join(outputDir, `${diagramBase}.${imgExt}`)
@@ -116,13 +159,16 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
         throw new Error(`mmdc failed (exit ${proc.exitCode})${stderr ? `:\n${stderr.trim()}` : ""}`)
       }
 
-      const relImgPath = path
-        .relative(path.dirname(outputPath), imgPath)
-        .split(path.sep)
-        .join("/")
-      const replacement = `![${diagramBase}](${relImgPath})`
-      updated = updated.replace(match[0], replacement)
-    }
+    const relImgPath = path
+      .relative(path.dirname(outputPath), imgPath)
+      .split(path.sep)
+      .join("/")
+    const heading = [...headings].reverse().find((h) => h.index <= (match?.index ?? 0))
+    const caption = heading ? normalizeHeadingForCaption(heading.text) : diagramBase
+    const altText = sanitizeAltText(caption || diagramBase)
+    const replacement = `![${altText}](${relImgPath})`
+    updated = updated.replace(match[0], replacement)
+  }
 
     await fs.writeFile(outputPath, updated, "utf8")
 

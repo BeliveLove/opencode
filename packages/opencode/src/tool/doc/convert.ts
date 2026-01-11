@@ -269,6 +269,316 @@ function rewriteImageLinks(markdown: string, baseDir: string) {
   })
 }
 
+type Heading = {
+  level: number
+  text: string
+  index: number
+}
+
+function splitFrontMatter(markdown: string) {
+  const lines = markdown.split(/\r?\n/)
+  if (lines.length === 0 || lines[0].trim() !== "---") {
+    return { frontMatter: "", body: markdown }
+  }
+  const endIndex = lines.slice(1).findIndex((line) => {
+    const trimmed = line.trim()
+    return trimmed === "---" || trimmed === "..."
+  })
+  if (endIndex === -1) return { frontMatter: "", body: markdown }
+  const end = endIndex + 1
+  return {
+    frontMatter: lines.slice(0, end + 1).join("\n"),
+    body: lines.slice(end + 1).join("\n").replace(/^\n+/, ""),
+  }
+}
+
+function extractHeadings(markdown: string): Heading[] {
+  const headings: Heading[] = []
+  const lines = markdown.split(/\r?\n/)
+  let inFence = false
+  let fenceMarker = ""
+  let offset = 0
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith("```")) {
+      if (!inFence) {
+        inFence = true
+        fenceMarker = "```"
+      } else if (trimmed.startsWith(fenceMarker)) {
+        inFence = false
+      }
+      offset += line.length + 1
+      continue
+    }
+    if (!inFence) {
+      const match = /^(#{1,6})\s+(.+)$/.exec(line)
+      if (match) {
+        headings.push({
+          level: match[1].length,
+          text: match[2].trim().replace(/\s+#\s*$/, ""),
+          index: offset,
+        })
+      }
+    }
+    offset += line.length + 1
+  }
+  return headings
+}
+
+function normalizeHeadingForCaption(text: string) {
+  let value = text.trim()
+  value = value.replace(/^\d+(?:\.\d+)*\s*/, "")
+  value = value.replace(/^[：:.。\-\s]+/, "")
+  value = value.trim()
+  if (!value) return ""
+  if (!value.endsWith("图") && !value.endsWith("图示") && !value.endsWith("示意")) {
+    return `${value}图`
+  }
+  return value
+}
+
+function sanitizeAltText(text: string) {
+  return text.replace(/[\[\]]/g, "").trim()
+}
+
+function buildStaticToc(headings: Heading[], tocDepth: number) {
+  const entries = headings.filter((h) => h.level > 1 && h.level <= tocDepth)
+  if (entries.length === 0) return ""
+  const minLevel = Math.min(...entries.map((h) => h.level))
+  const lines: string[] = []
+  for (const heading of entries) {
+    const indent = "  ".repeat(Math.max(0, heading.level - minLevel))
+    lines.push(`${indent}- ${heading.text}`)
+  }
+  return lines.join("\n")
+}
+
+function insertStaticToc(markdown: string, tocDepth: number) {
+  const headings = extractHeadings(markdown)
+  const toc = buildStaticToc(headings, tocDepth)
+  if (!toc) return { markdown, inserted: false }
+
+  const hasTocHeading = /^(#{1,6})\s+(目录|Table of Contents)\s*$/im.test(markdown)
+  if (hasTocHeading) return { markdown, inserted: false }
+
+  const { frontMatter, body } = splitFrontMatter(markdown)
+  const tocBlock = ["## 目录", "", toc].join("\n")
+  const parts = []
+  if (frontMatter) parts.push(frontMatter.trimEnd())
+  parts.push(tocBlock)
+  if (body) parts.push(body)
+  return { markdown: parts.join("\n\n").replace(/\n{3,}/g, "\n\n"), inserted: true }
+}
+
+function normalizeInlineLists(markdown: string) {
+  const lines = markdown.split(/\r?\n/)
+  const output: string[] = []
+  let inFence = false
+  let fenceMarker = ""
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith("```")) {
+      if (!inFence) {
+        inFence = true
+        fenceMarker = "```"
+      } else if (trimmed.startsWith(fenceMarker)) {
+        inFence = false
+      }
+      output.push(line)
+      continue
+    }
+    if (inFence) {
+      output.push(line)
+      continue
+    }
+
+    const inlineMatch = /^(.+?)(：|:)\s*(.+)$/.exec(line)
+    if (inlineMatch) {
+      const lead = inlineMatch[1].trim()
+      const colon = inlineMatch[2]
+      const rest = inlineMatch[3].trim()
+
+      const dashItems = rest.split(/\s+-\s+/).map((item) => item.trim()).filter(Boolean)
+      if (dashItems.length >= 2) {
+        output.push(`${lead}${colon}`)
+        output.push(...dashItems.map((item) => `- ${item}`))
+        continue
+      }
+
+      const numberedMatches = rest.match(/\d+\.\s+/g)
+      if (numberedMatches && numberedMatches.length >= 2) {
+        const numberedItems = rest
+          .split(/\s+(?=\d+\.\s+)/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+        if (numberedItems.length >= 2) {
+          output.push(`${lead}${colon}`)
+          output.push(...numberedItems)
+          continue
+        }
+      }
+    }
+
+    output.push(line)
+  }
+  return output.join("\n")
+}
+
+const SQL_CONSTRAINT_KEYWORDS = new Set([
+  "PRIMARY",
+  "KEY",
+  "NOT",
+  "NULL",
+  "DEFAULT",
+  "UNIQUE",
+  "REFERENCES",
+  "AUTO_INCREMENT",
+  "ON",
+  "UPDATE",
+  "CHECK",
+  "COMMENT",
+  "COLLATE",
+  "CONSTRAINT",
+  "INDEX",
+  "FOREIGN",
+])
+
+function parseSqlColumns(lines: string[]) {
+  const columns: { name: string; type: string; constraint: string }[] = []
+  for (const raw of lines) {
+    const line = raw.replace(/,+$/, "").trim()
+    if (!line) continue
+    const upper = line.toUpperCase()
+    if (
+      upper.startsWith("PRIMARY KEY") ||
+      upper.startsWith("FOREIGN KEY") ||
+      upper.startsWith("UNIQUE") ||
+      upper.startsWith("CONSTRAINT") ||
+      upper.startsWith("KEY ") ||
+      upper.startsWith("INDEX")
+    ) {
+      continue
+    }
+    const tokens = line.split(/\s+/)
+    if (tokens.length === 0) continue
+    const name = tokens.shift()!.replace(/^[`"'[]|[`"'\\]]$/g, "")
+    const typeTokens: string[] = []
+    const constraintTokens: string[] = []
+    let parenDepth = 0
+    let constraintsStarted = false
+    for (const token of tokens) {
+      const cleaned = token.replace(/,+$/, "")
+      const upperToken = cleaned.toUpperCase()
+      if (!constraintsStarted && parenDepth === 0 && SQL_CONSTRAINT_KEYWORDS.has(upperToken)) {
+        constraintsStarted = true
+      }
+      if (constraintsStarted) {
+        constraintTokens.push(cleaned)
+      } else {
+        typeTokens.push(cleaned)
+        parenDepth += (cleaned.match(/\(/g) || []).length
+        parenDepth -= (cleaned.match(/\)/g) || []).length
+      }
+    }
+    columns.push({
+      name,
+      type: typeTokens.join(" "),
+      constraint: constraintTokens.join(" "),
+    })
+  }
+  return columns
+}
+
+function convertSqlToTables(markdown: string) {
+  const lines = markdown.split(/\r?\n/)
+  const output: string[] = []
+  let inFence = false
+  let fenceLang = ""
+  let fenceLines: string[] = []
+  let fenceStart = ""
+
+  const flushFence = () => {
+    const content = fenceLines.join("\n")
+    const upper = content.toUpperCase()
+    const isSql = fenceLang.toLowerCase() === "sql" || upper.includes("CREATE TABLE")
+    if (!isSql) {
+      output.push(fenceStart, ...fenceLines, "```")
+      return
+    }
+
+    const tables: { name: string; columns: { name: string; type: string; constraint: string }[] }[] = []
+    let currentName = ""
+    let currentLines: string[] = []
+    for (const rawLine of content.split(/\r?\n/)) {
+      const line = rawLine.trim()
+      const match = /^CREATE\s+TABLE\s+([`"\[]?[^\s(]+[`"\]]?)/i.exec(line)
+      if (match) {
+        if (currentName && currentLines.length) {
+          tables.push({ name: currentName, columns: parseSqlColumns(currentLines) })
+        }
+        currentName = match[1].replace(/^[`"[]|[`"\\]]$/g, "")
+        currentLines = []
+        continue
+      }
+      if (currentName) {
+        if (line.startsWith(")") || line.startsWith(");")) {
+          tables.push({ name: currentName, columns: parseSqlColumns(currentLines) })
+          currentName = ""
+          currentLines = []
+        } else {
+          currentLines.push(rawLine)
+        }
+      }
+    }
+    if (currentName && currentLines.length) {
+      tables.push({ name: currentName, columns: parseSqlColumns(currentLines) })
+    }
+
+    if (!tables.length) {
+      output.push(fenceStart, ...fenceLines, "```")
+      return
+    }
+
+    for (const table of tables) {
+      output.push(`**${table.name} 表结构**`)
+      output.push("")
+      output.push("| 字段 | 类型 | 约束 |")
+      output.push("| --- | --- | --- |")
+      for (const col of table.columns) {
+        output.push(`| ${col.name} | ${col.type || "-"} | ${col.constraint || "-"} |`)
+      }
+      output.push("")
+    }
+  }
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith("```")) {
+      if (!inFence) {
+        inFence = true
+        fenceLang = trimmed.slice(3).trim()
+        fenceLines = []
+        fenceStart = line
+      } else {
+        inFence = false
+        flushFence()
+      }
+      continue
+    }
+    if (inFence) {
+      fenceLines.push(line)
+      continue
+    }
+    output.push(line)
+  }
+  if (inFence) {
+    output.push(fenceStart, ...fenceLines)
+  }
+  return output.join("\n")
+}
+
 async function renderMermaidBlocks(
   markdown: string,
   outputDir: string,
@@ -278,6 +588,7 @@ async function renderMermaidBlocks(
   const mmdcPath = await ensureMermaidCli()
 
   await fs.mkdir(outputDir, { recursive: true })
+  const headings = extractHeadings(markdown)
   const mermaidRegex = /```mermaid\s*([\s\S]*?)```/g
   let match: RegExpExecArray | null
   let index = 0
@@ -308,7 +619,10 @@ async function renderMermaidBlocks(
       .relative(sourceDir, imgPath)
       .split(path.sep)
       .join("/")
-    const replacement = `![${diagramBase}](${formatMarkdownPath(relImgPath)})`
+    const heading = [...headings].reverse().find((h) => h.index <= (match?.index ?? 0))
+    const caption = heading ? normalizeHeadingForCaption(heading.text) : diagramBase
+    const altText = sanitizeAltText(caption || diagramBase)
+    const replacement = `![${altText}](${formatMarkdownPath(relImgPath)})`
     updated = updated.replace(match[0], replacement)
   }
 
@@ -350,54 +664,77 @@ export const DocConvertTool = Tool.define("doc.convert", {
     let effectiveInputPath = inputPath
     let referenceDocxPath: string | undefined
     let mermaidRendered = 0
+    let staticTocInserted = false
 
     const inputText = await inputFile.text()
     const docStyle = extractDocStylePayload(inputText)
     const sourceDir = path.dirname(inputPath)
+    const shouldNormalize = toDocx || outputExt === ".pdf"
+
+    const preprocessMarkdown = (markdown: string) => {
+      let updated = markdown
+      if (shouldNormalize && toDocx) {
+        const headings = extractHeadings(updated)
+        const tocDepth = docStyle?.hints.tocDepth ?? 5
+        const tocEnabled =
+          docStyle?.hints.toc !== undefined
+            ? docStyle.hints.toc
+            : headings.some((heading) => heading.level > 1)
+        if (tocEnabled) {
+          const tocResult = insertStaticToc(updated, tocDepth)
+          updated = tocResult.markdown
+          staticTocInserted = tocResult.inserted
+        }
+        updated = normalizeInlineLists(updated)
+        updated = convertSqlToTables(updated)
+      } else if (shouldNormalize) {
+        updated = normalizeInlineLists(updated)
+      }
+      return updated
+    }
+
     if (docStyle) {
       const tempDir = path.join(Instance.directory, ".opencode", "doc", "tmp", `convert-${Date.now()}`)
       await fs.mkdir(tempDir, { recursive: true })
       effectiveInputPath = path.join(tempDir, path.basename(inputPath))
-      await fs.writeFile(effectiveInputPath, docStyle.styledMarkdown, "utf8")
+      const prepared = preprocessMarkdown(docStyle.styledMarkdown)
+      await fs.writeFile(effectiveInputPath, prepared, "utf8")
 
       const shouldRenderMermaid =
         docStyle.hints.diagramStyle === undefined || docStyle.hints.diagramStyle.toLowerCase() === "mermaid"
-      if (shouldRenderMermaid && docStyle.styledMarkdown.includes("```mermaid") && (toDocx || outputExt === ".pdf")) {
+      if (shouldRenderMermaid && prepared.includes("```mermaid") && (toDocx || outputExt === ".pdf")) {
         const diagramDir = path.join(Instance.directory, "diagrams")
         const diagramPrefix = path.basename(outputPath, path.extname(outputPath)) || "diagram"
-        const rendered = await renderMermaidBlocks(
-          docStyle.styledMarkdown,
-          diagramDir,
-          diagramPrefix,
-          sourceDir,
-        )
+        const rendered = await renderMermaidBlocks(prepared, diagramDir, diagramPrefix, sourceDir)
         mermaidRendered = rendered.count
         const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
         await fs.writeFile(effectiveInputPath, rewritten, "utf8")
       } else {
-        const rewritten = rewriteImageLinks(docStyle.styledMarkdown, sourceDir)
+        const rewritten = rewriteImageLinks(prepared, sourceDir)
         await fs.writeFile(effectiveInputPath, rewritten, "utf8")
       }
     }
 
-    if (!docStyle && (toDocx || outputExt === ".pdf") && inputText.includes("```mermaid")) {
-      const tempDir = path.join(Instance.directory, ".opencode", "doc", "tmp", `convert-${Date.now()}`)
-      await fs.mkdir(tempDir, { recursive: true })
-      effectiveInputPath = path.join(tempDir, path.basename(inputPath))
-      const diagramDir = path.join(Instance.directory, "diagrams")
-      const diagramPrefix = path.basename(outputPath, path.extname(outputPath)) || "diagram"
-      const rendered = await renderMermaidBlocks(
-        inputText,
-        diagramDir,
-        diagramPrefix,
-        sourceDir,
-      )
-      mermaidRendered = rendered.count
-      const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
-      await fs.writeFile(effectiveInputPath, rewritten, "utf8")
-    } else if (!docStyle && effectiveInputPath !== inputPath) {
-      const rewritten = rewriteImageLinks(inputText, sourceDir)
-      await fs.writeFile(effectiveInputPath, rewritten, "utf8")
+    if (!docStyle) {
+      const prepared = preprocessMarkdown(inputText)
+      const needsTemp = prepared !== inputText || shouldNormalize
+      if (needsTemp) {
+        const tempDir = path.join(Instance.directory, ".opencode", "doc", "tmp", `convert-${Date.now()}`)
+        await fs.mkdir(tempDir, { recursive: true })
+        effectiveInputPath = path.join(tempDir, path.basename(inputPath))
+      }
+
+      if ((toDocx || outputExt === ".pdf") && prepared.includes("```mermaid")) {
+        const diagramDir = path.join(Instance.directory, "diagrams")
+        const diagramPrefix = path.basename(outputPath, path.extname(outputPath)) || "diagram"
+        const rendered = await renderMermaidBlocks(prepared, diagramDir, diagramPrefix, sourceDir)
+        mermaidRendered = rendered.count
+        const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
+        await fs.writeFile(effectiveInputPath, rewritten, "utf8")
+      } else if (effectiveInputPath !== inputPath) {
+        const rewritten = rewriteImageLinks(prepared, sourceDir)
+        await fs.writeFile(effectiveInputPath, rewritten, "utf8")
+      }
     }
 
     const args = [effectiveInputPath, "-o", outputPath]
@@ -414,7 +751,7 @@ export const DocConvertTool = Tool.define("doc.convert", {
     }
 
     const tocEnabled = docStyle?.hints.toc
-    if (!hasArg(extraArgs, "--toc")) {
+    if (!hasArg(extraArgs, "--toc") && !staticTocInserted) {
       if (tocEnabled) {
         extraArgs.push("--toc")
       } else if (toDocx && /(^|\n)#{1,6}\s+/m.test(docStyle?.styledMarkdown ?? inputText)) {
