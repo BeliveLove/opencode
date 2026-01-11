@@ -86,7 +86,7 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
     const rawMarkdown = await inputFile.text()
     const styled = extractDocStylePayload(rawMarkdown)
     const markdown = styled?.styledMarkdown ?? rawMarkdown
-    const mermaidRegex = /```mermaid\\s*([\\s\\S]*?)```/g
+    const mermaidRegex = /```mermaid\s*([\s\S]*?)```/g
     let match: RegExpExecArray | null
     let index = 0
     let updated = markdown

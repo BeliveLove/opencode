@@ -250,12 +250,20 @@ function rewriteImageLinks(markdown: string, baseDir: string) {
       }
     }
 
-    if (!pathPart || isRemotePath(pathPart) || path.isAbsolute(pathPart)) {
+    if (!pathPart || isRemotePath(pathPart)) {
       return full
     }
 
-    const resolved = path.resolve(baseDir, pathPart)
-    const formatted = formatMarkdownPath(resolved)
+    if (!path.isAbsolute(pathPart)) {
+      return full
+    }
+
+    const resolved = path.resolve(pathPart)
+    const relative = path
+      .relative(baseDir, resolved)
+      .split(path.sep)
+      .join("/")
+    const formatted = formatMarkdownPath(relative)
     const withTitle = titlePart ? `${formatted} ${titlePart}` : formatted
     return `![${alt}](${withTitle})`
   })
@@ -265,11 +273,12 @@ async function renderMermaidBlocks(
   markdown: string,
   outputDir: string,
   diagramPrefix: string,
+  sourceDir: string,
 ) {
   const mmdcPath = await ensureMermaidCli()
 
   await fs.mkdir(outputDir, { recursive: true })
-  const mermaidRegex = /```mermaid\\s*([\\s\\S]*?)```/g
+  const mermaidRegex = /```mermaid\s*([\s\S]*?)```/g
   let match: RegExpExecArray | null
   let index = 0
   let updated = markdown
@@ -295,8 +304,11 @@ async function renderMermaidBlocks(
       throw new Error(`mmdc failed (exit ${proc.exitCode})${stderr ? `:\n${stderr.trim()}` : ""}`)
     }
 
-    const absImgPath = formatMarkdownPath(imgPath)
-    const replacement = `![${diagramBase}](${absImgPath})`
+    const relImgPath = path
+      .relative(sourceDir, imgPath)
+      .split(path.sep)
+      .join("/")
+    const replacement = `![${diagramBase}](${formatMarkdownPath(relImgPath)})`
     updated = updated.replace(match[0], replacement)
   }
 
@@ -357,6 +369,7 @@ export const DocConvertTool = Tool.define("doc.convert", {
           docStyle.styledMarkdown,
           diagramDir,
           diagramPrefix,
+          sourceDir,
         )
         mermaidRendered = rendered.count
         const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
@@ -377,6 +390,7 @@ export const DocConvertTool = Tool.define("doc.convert", {
         inputText,
         diagramDir,
         diagramPrefix,
+        sourceDir,
       )
       mermaidRendered = rendered.count
       const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
@@ -423,6 +437,13 @@ export const DocConvertTool = Tool.define("doc.convert", {
       }
       referenceDocxPath = await createReferenceDocx(pandocPath, fonts, Instance.directory)
       extraArgs.push("--reference-doc", referenceDocxPath)
+    }
+
+    const hasResourcePath = hasArg(extraArgs, "--resource-path")
+    if (!hasResourcePath) {
+      const diagramDir = path.join(Instance.directory, "diagrams")
+      const resourcePath = [sourceDir, diagramDir, Instance.directory].join(path.delimiter)
+      extraArgs.push("--resource-path", resourcePath)
     }
 
     if (extraArgs.length) args.push(...extraArgs)
