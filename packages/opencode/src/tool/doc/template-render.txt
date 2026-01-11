@@ -1,5 +1,5 @@
-Render a built-in enterprise documentation template (Markdown) with optional variable substitution.
+Render a documentation template (Markdown) with optional variable substitution.
 
-Use this to start new docs (PRD/TDD/test plan/runbook/etc.) with consistent structure.
+Use built-in templates when they exist; otherwise infer a structure from the domain + doc_type in the templateId (e.g., tech.architecture).
 
 Optionally write the rendered Markdown to outputPath, and/or generate a reference .docx from it via pandoc.

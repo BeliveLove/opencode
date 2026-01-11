@@ -342,6 +342,18 @@ function sanitizeAltText(text: string) {
   return text.replace(/[\[\]]/g, "").trim()
 }
 
+function stripDiagramSuffix(text: string) {
+  return text.replace(/(图示|示意|图)$/u, "").trim()
+}
+
+function buildDiagramCaption(index: number, caption: string) {
+  const base = stripDiagramSuffix(caption)
+  const label = `图 ${index}：${caption}`
+  const descriptionBase = base || "相关结构"
+  const description = `说明：本图展示${descriptionBase}的主要组成与关系。`
+  return { label, description }
+}
+
 function buildStaticToc(headings: Heading[], tocDepth: number) {
   const entries = headings.filter((h) => h.level > 1 && h.level <= tocDepth)
   if (entries.length === 0) return ""
@@ -622,7 +634,8 @@ async function renderMermaidBlocks(
     const heading = [...headings].reverse().find((h) => h.index <= (match?.index ?? 0))
     const caption = heading ? normalizeHeadingForCaption(heading.text) : diagramBase
     const altText = sanitizeAltText(caption || diagramBase)
-    const replacement = `![${altText}](${formatMarkdownPath(relImgPath)})`
+    const { label, description } = buildDiagramCaption(index, caption || diagramBase)
+    const replacement = `![${altText}](${formatMarkdownPath(relImgPath)})\n\n${label}\n\n${description}`
     updated = updated.replace(match[0], replacement)
   }
 

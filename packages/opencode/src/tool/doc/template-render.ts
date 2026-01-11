@@ -438,6 +438,369 @@ const TEMPLATES: Template[] = [
 
 const templateById = new Map<string, Template>(TEMPLATES.map((t) => [t.id, t]))
 
+const TEMPLATE_ALIASES = new Map<string, string>([
+  ["prd", "tech.prd"],
+  ["tdd", "tech.tdd"],
+  ["sdd", "tech.sdd"],
+  ["requirements", "eng.requirements_analysis"],
+  ["requirements_analysis", "eng.requirements_analysis"],
+  ["feasibility", "eng.feasibility_study"],
+  ["feasibility_study", "eng.feasibility_study"],
+  ["release_notes", "eng.release_notes"],
+  ["test_plan", "qa.test_plan"],
+  ["testplan", "qa.test_plan"],
+  ["runbook", "ops.runbook"],
+  ["postmortem", "ops.postmortem"],
+  ["threat_model", "security.threat_model"],
+  ["meeting_minutes", "mgmt.meeting_minutes"],
+  ["minutes", "mgmt.meeting_minutes"],
+  ["weekly_report", "mgmt.weekly_report"],
+  ["contract_review", "legal.contract_review_notes"],
+  ["contract_review_notes", "legal.contract_review_notes"],
+])
+
+type InferredTemplateInfo = {
+  inferred: boolean
+  inferredFrom?: {
+    domain: string
+    docType: string
+    baseTemplateId?: string
+  }
+}
+
+function normalizeKey(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+}
+
+function splitTemplateId(templateId: string) {
+  const parts = templateId.split(".").filter(Boolean)
+  if (parts.length <= 1) {
+    return {
+      domain: "general",
+      docType: parts[0] ?? templateId,
+    }
+  }
+  return {
+    domain: parts[0],
+    docType: parts.slice(1).join("."),
+  }
+}
+
+type Section = {
+  heading: string
+  subheadings?: string[]
+}
+
+function addSections(target: Section[], incoming: Section[]) {
+  const existing = new Map<string, Section>()
+  for (const section of target) {
+    existing.set(section.heading.toLowerCase(), section)
+  }
+  for (const section of incoming) {
+    const key = section.heading.toLowerCase()
+    const current = existing.get(key)
+    if (!current) {
+      target.push({ heading: section.heading, subheadings: section.subheadings ? [...section.subheadings] : undefined })
+      existing.set(key, target[target.length - 1])
+      continue
+    }
+    if (!section.subheadings?.length) continue
+    if (!current.subheadings) current.subheadings = []
+    for (const sub of section.subheadings) {
+      if (!current.subheadings.includes(sub)) current.subheadings.push(sub)
+    }
+  }
+}
+
+function inferSections(domain: string, docType: string): Section[] {
+  const sections: Section[] = []
+  const domainKey = normalizeKey(domain)
+  const docTypeKey = normalizeKey(docType)
+  const includesAny = (value: string, candidates: string[]) => candidates.some((c) => value.includes(c))
+
+  if (includesAny(docTypeKey, ["architecture", "arch"])) {
+    addSections(sections, [
+      { heading: "Overview" },
+      { heading: "Goals / Non-goals" },
+      { heading: "Architecture overview", subheadings: ["Context diagram (placeholder)", "Component diagram (placeholder)"] },
+      { heading: "Data flow", subheadings: ["DFD / pipeline steps (placeholder)"] },
+      { heading: "Interfaces / APIs" },
+      { heading: "Data model" },
+      { heading: "Deployment & configuration" },
+      { heading: "Security & Compliance" },
+      { heading: "Observability & Monitoring" },
+      { heading: "Risks & Open questions" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["design", "sdd"])) {
+    addSections(sections, [
+      { heading: "Purpose & Scope" },
+      { heading: "Requirements summary" },
+      { heading: "Architecture overview", subheadings: ["Context diagram (placeholder)", "Component diagram (placeholder)"] },
+      { heading: "Data flow", subheadings: ["DFD / pipeline steps (placeholder)"] },
+      { heading: "Component design" },
+      { heading: "Interfaces / APIs" },
+      { heading: "Data model" },
+      { heading: "Interaction diagrams", subheadings: ["Sequence / state transitions (placeholder)"] },
+      { heading: "Deployment & configuration" },
+      { heading: "Non-functional requirements", subheadings: ["Performance", "Reliability", "Security"] },
+      { heading: "Testing strategy" },
+      { heading: "Risks & Open questions" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["requirements", "analysis"])) {
+    addSections(sections, [
+      { heading: "Background & Problem statement" },
+      { heading: "Goals / Non-goals" },
+      { heading: "Users & Use cases" },
+      { heading: "Functional requirements" },
+      { heading: "Non-functional requirements" },
+      { heading: "Constraints & Assumptions" },
+      { heading: "Out of scope" },
+      { heading: "Acceptance criteria" },
+      { heading: "Traceability (req -> design/test)" },
+      { heading: "Open questions" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["test", "qa"])) {
+    addSections(sections, [
+      { heading: "Objectives" },
+      { heading: "Test strategy" },
+      { heading: "Test cases (high level)" },
+      { heading: "Environments" },
+      { heading: "Entry / Exit criteria" },
+      { heading: "Risks" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["runbook", "ops"])) {
+    addSections(sections, [
+      { heading: "Service overview" },
+      { heading: "Dashboards / Alerts" },
+      { heading: "Common operations" },
+      { heading: "Incident response checklist" },
+      { heading: "Escalation & Contacts" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["postmortem", "incident"])) {
+    addSections(sections, [
+      { heading: "Summary" },
+      { heading: "Impact" },
+      { heading: "Timeline" },
+      { heading: "Root cause" },
+      { heading: "What went well / What went wrong" },
+      { heading: "Action items" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["threat", "security"])) {
+    addSections(sections, [
+      { heading: "System overview" },
+      { heading: "Assets" },
+      { heading: "Trust boundaries" },
+      { heading: "Threats (STRIDE)" },
+      { heading: "Mitigations" },
+      { heading: "Residual risk" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["release", "notes"])) {
+    addSections(sections, [
+      { heading: "Highlights" },
+      { heading: "Changes" },
+      { heading: "Fixes" },
+      { heading: "Known issues" },
+      { heading: "Rollback plan" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["meeting", "minutes"])) {
+    addSections(sections, [
+      { heading: "Agenda" },
+      { heading: "Notes" },
+      { heading: "Decisions" },
+      { heading: "Action items" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["weekly", "report"])) {
+    addSections(sections, [
+      { heading: "Summary" },
+      { heading: "Progress" },
+      { heading: "Risks / Blockers" },
+      { heading: "Next week plan" },
+    ])
+  }
+
+  if (includesAny(docTypeKey, ["contract", "legal"])) {
+    addSections(sections, [
+      { heading: "Summary" },
+      { heading: "Key terms" },
+      { heading: "Risks / Unacceptable terms" },
+      { heading: "Required changes" },
+      { heading: "Questions for counterparty" },
+    ])
+  }
+
+  switch (domainKey) {
+    case "tech":
+      addSections(sections, [
+        { heading: "Overview" },
+        { heading: "Architecture" },
+        { heading: "Data model" },
+        { heading: "Interfaces / APIs" },
+        { heading: "Deployment & configuration" },
+        { heading: "Security & Compliance" },
+        { heading: "Observability & Monitoring" },
+        { heading: "Risks & Open questions" },
+      ])
+      break
+    case "eng":
+      addSections(sections, [
+        { heading: "Background & Problem statement" },
+        { heading: "Goals / Non-goals" },
+        { heading: "Requirements" },
+        { heading: "Constraints & Assumptions" },
+        { heading: "Risks & Open questions" },
+      ])
+      break
+    case "ops":
+      addSections(sections, [
+        { heading: "Service overview" },
+        { heading: "Dashboards / Alerts" },
+        { heading: "Common operations" },
+        { heading: "Incident response checklist" },
+        { heading: "Escalation & Contacts" },
+      ])
+      break
+    case "mgmt":
+      addSections(sections, [
+        { heading: "Summary" },
+        { heading: "Decisions" },
+        { heading: "Action items" },
+        { heading: "Risks / Blockers" },
+        { heading: "Next steps" },
+      ])
+      break
+    case "security":
+      addSections(sections, [
+        { heading: "System overview" },
+        { heading: "Assets" },
+        { heading: "Trust boundaries" },
+        { heading: "Threats (STRIDE)" },
+        { heading: "Mitigations" },
+        { heading: "Residual risk" },
+      ])
+      break
+    case "legal":
+      addSections(sections, [
+        { heading: "Summary" },
+        { heading: "Key terms" },
+        { heading: "Risks / Unacceptable terms" },
+        { heading: "Required changes" },
+        { heading: "Questions for counterparty" },
+      ])
+      break
+    default:
+      addSections(sections, [
+        { heading: "Summary" },
+        { heading: "Background" },
+        { heading: "Goals / Non-goals" },
+        { heading: "Scope" },
+        { heading: "Details" },
+        { heading: "Decisions" },
+        { heading: "Risks & Open questions" },
+      ])
+      break
+  }
+
+  if (sections.length === 0) {
+    addSections(sections, [
+      { heading: "Summary" },
+      { heading: "Background" },
+      { heading: "Goals / Non-goals" },
+      { heading: "Scope" },
+      { heading: "Details" },
+      { heading: "Decisions" },
+      { heading: "Risks & Open questions" },
+    ])
+  }
+
+  return sections
+}
+
+function titleize(value: string) {
+  return value
+    .split(/[\s._-]+/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ")
+}
+
+function buildAutoTemplateBody(domain: string, docType: string) {
+  const sections = inferSections(domain, docType)
+  const lines: string[] = [
+    "# {{title}}",
+    "",
+    "- Owner: {{owner}}",
+    "- Date: {{date}}",
+    "- Status: {{status}}",
+    "- Version: {{version}}",
+    "",
+  ]
+
+  for (const section of sections) {
+    lines.push(`## ${section.heading}`, "")
+    if (section.subheadings?.length) {
+      for (const sub of section.subheadings) {
+        lines.push(`### ${sub}`, "")
+      }
+    }
+  }
+
+  return lines.join("\n")
+}
+
+function resolveTemplate(templateId: string): { template: Template; info: InferredTemplateInfo } {
+  const known = templateById.get(templateId)
+  if (known) {
+    return { template: known, info: { inferred: false } }
+  }
+
+  const { domain, docType } = splitTemplateId(templateId)
+  const docTypeKey = normalizeKey(docType)
+  const docTypeParts = docTypeKey.split("_").filter(Boolean)
+  const alias = TEMPLATE_ALIASES.get(docTypeKey) ?? TEMPLATE_ALIASES.get(docTypeParts[0] ?? "")
+  if (alias) {
+    const base = templateById.get(alias)
+    if (base) {
+      return {
+        template: { ...base, id: templateId },
+        info: { inferred: true, inferredFrom: { domain: normalizeKey(domain), docType: docTypeKey, baseTemplateId: alias } },
+      }
+    }
+  }
+
+  const body = buildAutoTemplateBody(domain, docType)
+  const title = `Auto Template: ${titleize(docType)}`
+  return {
+    template: {
+      id: templateId,
+      version: "1.0.0-auto",
+      title,
+      body,
+    },
+    info: { inferred: true, inferredFrom: { domain: normalizeKey(domain), docType: docTypeKey } },
+  }
+}
+
 function renderTemplateBody(body: string, variables: Record<string, string>) {
   return body.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (match, key) => {
     const v = variables[String(key)]
@@ -461,11 +824,8 @@ export const DocTemplateRenderTool = Tool.define("doc.template.render", {
     pandocArgs: z.array(z.string()).optional().describe("Optional extra pandoc arguments for reference docx generation"),
   }),
   async execute(params, ctx) {
-    const t = templateById.get(params.templateId)
-    if (!t) {
-      const available = Array.from(templateById.keys()).sort().join(", ")
-      throw new Error(`Unknown templateId: ${params.templateId}\n\nAvailable: ${available}`)
-    }
+    const resolved = resolveTemplate(params.templateId)
+    const t = resolved.template
 
     const output = renderTemplateBody(t.body, params.variables ?? {})
     let outputPath: string | undefined
@@ -521,6 +881,8 @@ export const DocTemplateRenderTool = Tool.define("doc.template.render", {
       metadata: {
         templateId: t.id,
         version: t.version,
+        inferred: resolved.info.inferred,
+        inferredFrom: resolved.info.inferredFrom,
         outputPath,
         referenceDocxPath,
         pandocExitCode,

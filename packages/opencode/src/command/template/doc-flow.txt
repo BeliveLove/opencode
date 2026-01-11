@@ -8,12 +8,12 @@
 - 不要擅自定“必须产出”的文档；用“建议/可选”并让用户确认。
 - 质量优先：图表/表格必须有图注/表注 + 解释 + 文内引用；编号步骤必须保序；禁止用内联破折号模拟列表。
 - `doc.template.render` 是工具，不是 skill，禁止调用不存在的 skill（例如 `doc-template-render`）。
-- 可用模板 templateId 仅限：
+- 内置模板优先使用（模板ID如下）；若无匹配模板，可让 `doc.template.render` 基于领域 + doc_type 自动生成模板：
   doc.default, tech.prd, tech.tdd, tech.sdd, eng.requirements_analysis, eng.feasibility_study,
   qa.test_plan, ops.runbook, ops.postmortem, security.threat_model,
   eng.release_notes, mgmt.meeting_minutes, mgmt.weekly_report, legal.contract_review_notes.
 - 每个 doc_type 必须落地一个模板 Markdown 文件（template_md）；若用户未指定路径，默认写入 `.opencode/doc/templates/<doc_type>.template.md`。
-- 若未指定模板且无匹配模板类型，使用 `doc.default` 生成模板 Markdown。
+- 若未指定模板且无匹配内置模板类型，使用 `doc.template.render` 自动推断模板（必要时再用 `doc-outline` 补细节）。
 - `doc-style` 是 skill，必须在填充正文后调用以整理样式与元信息。
 - 如果输入是 .doc/.docx 且需要样式统一：先用 `doc.convert` 转成 .md，再走 `doc-style`，最后再 `doc.convert` 回 .docx。
 - 如果输入是 .md，直接 `doc-style` 后再 `doc.convert` 到 .docx。
@@ -22,11 +22,11 @@
 1) 输出 `doc.flow.v1` 的 YAML（包含领域 + 文档清单 + 推荐项 + 缺失信息 + template_md/reference_docx）。
 2) 询问用户选择需要的 doc_type（支持多选）。如果用户已明确文档类型，直接进入下一步。
 3) 对每个 doc_type 生成骨架：
-   - 有模板则用 `doc.template.render`
-   - 无模板则用 `doc-outline`
+   - 有内置模板则用 `doc.template.render`
+   - 无内置模板则用 `doc.template.render` 自动推断模板；需要更细时再用 `doc-outline`
 4) 为每个 doc_type 写入模板 Markdown 文件（template_md）：
    - 用户已提供模板路径：直接使用并必要时 `doc.import` 验证内容。
-   - 使用 `doc.template.render` 输出并写入 template_md（未指定模板时用 `doc.default`）。
+   - 使用 `doc.template.render` 输出并写入 template_md（无内置模板时用自动推断模板）。
    - 若仅有 `doc-outline` 结果，将 outline 转成 Markdown 骨架再写入。
 5) 由 template_md 生成 reference docx（template_docx）：调用 `doc.convert` md->docx，后续导出时用 `--reference-doc` 引用。
 6) 汇总所有骨架/模板，请用户确认/补充缺失信息。

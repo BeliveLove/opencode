@@ -76,9 +76,19 @@ describe("tool.doc.template.render", () => {
     expect(result.metadata.templateId).toBe("tech.prd")
   })
 
-  test("throws on unknown templateId", async () => {
+  test("auto-infers a template when templateId is unknown", async () => {
     const tool = await DocTemplateRenderTool.init()
-    await expect(tool.execute({ templateId: "unknown.template", variables: {} }, ctx)).rejects.toThrow("Available:")
+    const result = await tool.execute(
+      {
+        templateId: "tech.architecture",
+        variables: { title: "Architecture Overview", owner: "Alice", date: "2026-01-09", status: "Draft", version: "v1" },
+      },
+      ctx,
+    )
+    expect(result.output).toContain("# Architecture Overview")
+    expect(result.output).toContain("## Architecture overview")
+    expect(result.metadata.templateId).toBe("tech.architecture")
+    expect(result.metadata.inferred).toBe(true)
   })
 
   test("writes template markdown and generates reference docx", async () => {

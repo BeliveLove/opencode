@@ -1,4 +1,4 @@
-import z from "zod"
+﻿import z from "zod"
 import path from "path"
 import fs from "fs/promises"
 import { Tool } from "../tool"
@@ -123,7 +123,7 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
   const normalizeHeadingForCaption = (text: string) => {
     let value = text.trim()
     value = value.replace(/^\d+(?:\.\d+)*\s*/, "")
-    value = value.replace(/^[：:.。\-\s]+/, "")
+    value = value.replace(/^[\)\]}.。\-\s]+/, "")
     value = value.trim()
     if (!value) return ""
     if (!value.endsWith("图") && !value.endsWith("图示") && !value.endsWith("示意")) {
@@ -134,30 +134,40 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
 
   const sanitizeAltText = (text: string) => text.replace(/[\[\]]/g, "").trim()
 
+  const stripDiagramSuffix = (text: string) => text.replace(/(图示|示意|图)$/u, "").trim()
+
+  const buildDiagramCaption = (index: number, caption: string) => {
+    const base = stripDiagramSuffix(caption)
+    const label = `图 ${index}：${caption}`
+    const descriptionBase = base || "相关结构"
+    const description = `说明：本图展示${descriptionBase}的主要组成与关系。`
+    return { label, description }
+  }
+
   while ((match = mermaidRegex.exec(markdown)) !== null) {
     index += 1
     const mermaidSource = match[1].trim()
     const diagramBase = `diagram-${index}`
-      const mmdPath = path.join(outputDir, `${diagramBase}.mmd`)
-      const imgExt = params.format ?? "png"
-      const imgPath = path.join(outputDir, `${diagramBase}.${imgExt}`)
+    const mmdPath = path.join(outputDir, `${diagramBase}.mmd`)
+    const imgExt = params.format ?? "png"
+    const imgPath = path.join(outputDir, `${diagramBase}.${imgExt}`)
 
-      await fs.writeFile(mmdPath, mermaidSource, "utf8")
+    await fs.writeFile(mmdPath, mermaidSource, "utf8")
 
-      const args = ["-i", mmdPath, "-o", imgPath]
-      if (params.args?.length) args.push(...params.args)
+    const args = ["-i", mmdPath, "-o", imgPath]
+    if (params.args?.length) args.push(...params.args)
 
-      const proc = Bun.spawn([mmdcPath, ...args], {
-        stdout: "pipe",
-        stderr: "pipe",
-        cwd: Instance.directory,
-        env: { ...process.env },
-      })
-      await proc.exited
-      const stderr = await Bun.readableStreamToText(proc.stderr)
-      if (proc.exitCode !== 0) {
-        throw new Error(`mmdc failed (exit ${proc.exitCode})${stderr ? `:\n${stderr.trim()}` : ""}`)
-      }
+    const proc = Bun.spawn([mmdcPath, ...args], {
+      stdout: "pipe",
+      stderr: "pipe",
+      cwd: Instance.directory,
+      env: { ...process.env },
+    })
+    await proc.exited
+    const stderr = await Bun.readableStreamToText(proc.stderr)
+    if (proc.exitCode !== 0) {
+      throw new Error(`mmdc failed (exit ${proc.exitCode})${stderr ? `:\n${stderr.trim()}` : ""}`)
+    }
 
     const relImgPath = path
       .relative(path.dirname(outputPath), imgPath)
@@ -166,10 +176,10 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
     const heading = [...headings].reverse().find((h) => h.index <= (match?.index ?? 0))
     const caption = heading ? normalizeHeadingForCaption(heading.text) : diagramBase
     const altText = sanitizeAltText(caption || diagramBase)
-    const replacement = `![${altText}](${relImgPath})`
+    const { label, description } = buildDiagramCaption(index, caption || diagramBase)
+    const replacement = `![${altText}](${relImgPath})\n\n${label}\n\n${description}`
     updated = updated.replace(match[0], replacement)
   }
-
     await fs.writeFile(outputPath, updated, "utf8")
 
     return {
@@ -184,3 +194,5 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
     }
   },
 })
+
+

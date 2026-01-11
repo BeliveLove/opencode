@@ -4,7 +4,7 @@
 规则：
 - 如果参数里包含/看起来像文件路径（.md/.txt/.docx/.pptx/.xlsx/.pdf），先用 `doc.import` 导入后再判断。
 - 如果目标/受众/约束不清，先在 missing_inputs 中列出并追问。
-- 推荐可用的模板（如 `doc.template.render` 的 templateId）。
+- 推荐可用的模板（如 `doc.template.render` 的 templateId）；若无内置模板，给出基于领域 + doc_type 的模板ID以便自动推断。
 - 若仓库已有相近文档/模板，优先对齐其结构与术语。
 
 然后（必须）：最终回复包含两部分：
