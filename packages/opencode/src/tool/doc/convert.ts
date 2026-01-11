@@ -120,6 +120,54 @@ async function patchDocxFonts(docxPath: string, fonts: DocxFonts) {
   }
 }
 
+async function patchDocxUpdateFields(docxPath: string) {
+  const data = await Bun.file(docxPath).arrayBuffer()
+  const reader = new ZipReader(new BlobReader(new Blob([data])))
+  const writer = new ZipWriter(
+    new BlobWriter("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+  )
+  let updatedSettings = false
+  try {
+    const entries = await reader.getEntries()
+    for (const entry of entries) {
+      if (entry.directory) continue
+      const blob = await entry.getData?.(new BlobWriter())
+      if (!blob) continue
+      if (entry.filename === "word/settings.xml") {
+        let settingsXml = await blob.text()
+        if (settingsXml.includes("w:updateFields")) {
+          settingsXml = settingsXml.replace(/<w:updateFields[^/>]*\/>/g, '<w:updateFields w:val="true"/>')
+        } else {
+          settingsXml = settingsXml.replace(
+            /<w:settings[^>]*>/,
+            (match) => `${match}<w:updateFields w:val="true"/>`,
+          )
+        }
+        const updatedBlob = new Blob([settingsXml], { type: "application/xml" })
+        await writer.add(entry.filename, new BlobReader(updatedBlob))
+        updatedSettings = true
+        continue
+      }
+      await writer.add(entry.filename, new BlobReader(blob))
+    }
+    if (!updatedSettings) {
+      await writer.add(
+        "word/settings.xml",
+        new BlobReader(
+          new Blob(
+            ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/></w:settings>'],
+            { type: "application/xml" },
+          ),
+        ),
+      )
+    }
+    const outBlob = await writer.close()
+    await fs.writeFile(docxPath, new Uint8Array(await outBlob.arrayBuffer()))
+  } finally {
+    await reader.close().catch(() => {})
+  }
+}
+
 async function createReferenceDocx(pandocPath: string, fonts: DocxFonts, workDir: string) {
   const referenceDir = path.join(workDir, ".opencode", "doc", "tmp", `reference-${Date.now()}`)
   await fs.mkdir(referenceDir, { recursive: true })
@@ -271,6 +319,22 @@ export const DocConvertTool = Tool.define("doc.convert", {
       }
     }
 
+    if (!docStyle && (toDocx || outputExt === ".pdf") && inputText.includes("```mermaid")) {
+      const tempDir = path.join(Instance.directory, ".opencode", "doc", "tmp", `convert-${Date.now()}`)
+      await fs.mkdir(tempDir, { recursive: true })
+      effectiveInputPath = path.join(tempDir, path.basename(inputPath))
+      const diagramDir = path.join(Instance.directory, "diagrams")
+      const diagramPrefix = path.basename(outputPath, path.extname(outputPath)) || "diagram"
+      const rendered = await renderMermaidBlocks(
+        inputText,
+        diagramDir,
+        path.dirname(effectiveInputPath),
+        diagramPrefix,
+      )
+      mermaidRendered = rendered.count
+      await fs.writeFile(effectiveInputPath, rendered.updated, "utf8")
+    }
+
     const args = [effectiveInputPath, "-o", outputPath]
     if (params.from) args.push("-f", params.from)
     if (params.to) args.push("-t", params.to)
@@ -284,11 +348,20 @@ export const DocConvertTool = Tool.define("doc.convert", {
       extraArgs.push("--reference-doc", referenceDocxPath)
     }
 
-    if (!hasArg(extraArgs, "--toc") && docStyle?.hints.toc) {
-      extraArgs.push("--toc")
+    const tocEnabled = docStyle?.hints.toc
+    if (!hasArg(extraArgs, "--toc")) {
+      if (tocEnabled) {
+        extraArgs.push("--toc")
+      } else if (toDocx && /(^|\n)#{1,6}\s+/m.test(docStyle?.styledMarkdown ?? inputText)) {
+        extraArgs.push("--toc")
+      }
     }
-    if (!hasArg(extraArgs, "--toc-depth") && docStyle?.hints.tocDepth !== undefined) {
-      extraArgs.push("--toc-depth", String(docStyle.hints.tocDepth))
+    if (!hasArg(extraArgs, "--toc-depth")) {
+      if (docStyle?.hints.tocDepth !== undefined) {
+        extraArgs.push("--toc-depth", String(docStyle.hints.tocDepth))
+      } else if (toDocx) {
+        extraArgs.push("--toc-depth", "5")
+      }
     }
 
     if (toDocx && !hasReferenceDoc && !referenceDocxPath && docStyle) {
@@ -317,6 +390,10 @@ export const DocConvertTool = Tool.define("doc.convert", {
     if (proc.exitCode !== 0) {
       const details = [stderr.trim(), stdout.trim()].filter(Boolean).join("\n")
       throw new Error(`pandoc conversion failed (exit ${proc.exitCode})${details ? `:\n${details}` : ""}`)
+    }
+
+    if (toDocx) {
+      await patchDocxUpdateFields(outputPath)
     }
 
     return {
