@@ -5,6 +5,7 @@ import { Tool } from "../tool"
 import DESCRIPTION from "./diagram-render.txt"
 import { Instance } from "@/project/instance"
 import { Filesystem } from "@/util/filesystem"
+import { extractDocStylePayload } from "./style"
 
 async function ensureReadableFile(ctx: Tool.Context, filePath: string) {
   if (!ctx.extra?.["bypassCwdCheck"] && !Filesystem.contains(Instance.directory, filePath)) {
@@ -64,7 +65,9 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
 
     const outputDir =
       params.outputDir ??
-      path.join(path.dirname(outputPath), "diagrams")
+      (Filesystem.contains(Instance.directory, outputPath)
+        ? path.join(Instance.directory, "diagrams")
+        : path.join(path.dirname(outputPath), "diagrams"))
 
     await ensureReadableFile(ctx, inputPath)
     await ensureWritableDir(ctx, outputDir)
@@ -89,7 +92,9 @@ export const DocDiagramRenderTool = Tool.define("doc.diagram.render", {
 
     await fs.mkdir(outputDir, { recursive: true })
 
-    const markdown = await inputFile.text()
+    const rawMarkdown = await inputFile.text()
+    const styled = extractDocStylePayload(rawMarkdown)
+    const markdown = styled?.styledMarkdown ?? rawMarkdown
     const mermaidRegex = /```mermaid\\s*([\\s\\S]*?)```/g
     let match: RegExpExecArray | null
     let index = 0
