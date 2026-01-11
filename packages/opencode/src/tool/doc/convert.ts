@@ -53,6 +53,12 @@ type DocxFonts = {
   mono?: string
 }
 
+const DEFAULT_DOCX_FONTS: DocxFonts = {
+  body: "SimSun",
+  heading: "SimHei",
+  mono: "Consolas",
+}
+
 function escapeXml(value: string) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;")
 }
@@ -364,16 +370,14 @@ export const DocConvertTool = Tool.define("doc.convert", {
       }
     }
 
-    if (toDocx && !hasReferenceDoc && !referenceDocxPath && docStyle) {
+    if (toDocx && !hasReferenceDoc && !referenceDocxPath) {
       const fonts: DocxFonts = {
-        body: docStyle.hints.fontBody,
-        heading: docStyle.hints.fontHeading,
-        mono: docStyle.hints.fontMono,
+        body: docStyle?.hints.fontBody ?? DEFAULT_DOCX_FONTS.body,
+        heading: docStyle?.hints.fontHeading ?? DEFAULT_DOCX_FONTS.heading,
+        mono: docStyle?.hints.fontMono ?? DEFAULT_DOCX_FONTS.mono,
       }
-      if (fonts.body || fonts.heading || fonts.mono) {
-        referenceDocxPath = await createReferenceDocx(pandocPath, fonts, Instance.directory)
-        extraArgs.push("--reference-doc", referenceDocxPath)
-      }
+      referenceDocxPath = await createReferenceDocx(pandocPath, fonts, Instance.directory)
+      extraArgs.push("--reference-doc", referenceDocxPath)
     }
 
     if (extraArgs.length) args.push(...extraArgs)
