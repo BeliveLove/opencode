@@ -209,10 +209,60 @@ function resolveDocxPath(docxPath: string, baseDir: string) {
   return path.resolve(baseDir, docxPath)
 }
 
+function toPosixPath(value: string) {
+  return value.replaceAll("\\", "/")
+}
+
+function formatMarkdownPath(value: string) {
+  const normalized = toPosixPath(value)
+  if (/\s|\(|\)/.test(normalized)) return `<${normalized}>`
+  return normalized
+}
+
+function isRemotePath(value: string) {
+  return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)
+}
+
+function rewriteImageLinks(markdown: string, baseDir: string) {
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
+  return markdown.replace(imageRegex, (full, alt, raw) => {
+    const trimmed = String(raw).trim()
+    let pathPart = trimmed
+    let titlePart = ""
+
+    if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
+      pathPart = trimmed.slice(1, -1).trim()
+    } else {
+      let inQuote = false
+      let splitAt = -1
+      for (let i = 0; i < trimmed.length; i += 1) {
+        const ch = trimmed[i]
+        if (ch === '"') inQuote = !inQuote
+        if (!inQuote && /\s/.test(ch)) {
+          splitAt = i
+          break
+        }
+      }
+      if (splitAt !== -1) {
+        pathPart = trimmed.slice(0, splitAt).trim()
+        titlePart = trimmed.slice(splitAt).trim()
+      }
+    }
+
+    if (!pathPart || isRemotePath(pathPart) || path.isAbsolute(pathPart)) {
+      return full
+    }
+
+    const resolved = path.resolve(baseDir, pathPart)
+    const formatted = formatMarkdownPath(resolved)
+    const withTitle = titlePart ? `${formatted} ${titlePart}` : formatted
+    return `![${alt}](${withTitle})`
+  })
+}
+
 async function renderMermaidBlocks(
   markdown: string,
   outputDir: string,
-  outputBaseDir: string,
   diagramPrefix: string,
 ) {
   const mmdcPath = Bun.which("mmdc")
@@ -254,11 +304,8 @@ async function renderMermaidBlocks(
       throw new Error(`mmdc failed (exit ${proc.exitCode})${stderr ? `:\n${stderr.trim()}` : ""}`)
     }
 
-    const relImgPath = path
-      .relative(outputBaseDir, imgPath)
-      .split(path.sep)
-      .join("/")
-    const replacement = `![${diagramBase}](${relImgPath})`
+    const absImgPath = formatMarkdownPath(imgPath)
+    const replacement = `![${diagramBase}](${absImgPath})`
     updated = updated.replace(match[0], replacement)
   }
 
@@ -303,6 +350,7 @@ export const DocConvertTool = Tool.define("doc.convert", {
 
     const inputText = await inputFile.text()
     const docStyle = extractDocStylePayload(inputText)
+    const sourceDir = path.dirname(inputPath)
     if (docStyle) {
       const tempDir = path.join(Instance.directory, ".opencode", "doc", "tmp", `convert-${Date.now()}`)
       await fs.mkdir(tempDir, { recursive: true })
@@ -317,11 +365,14 @@ export const DocConvertTool = Tool.define("doc.convert", {
         const rendered = await renderMermaidBlocks(
           docStyle.styledMarkdown,
           diagramDir,
-          path.dirname(effectiveInputPath),
           diagramPrefix,
         )
         mermaidRendered = rendered.count
-        await fs.writeFile(effectiveInputPath, rendered.updated, "utf8")
+        const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
+        await fs.writeFile(effectiveInputPath, rewritten, "utf8")
+      } else {
+        const rewritten = rewriteImageLinks(docStyle.styledMarkdown, sourceDir)
+        await fs.writeFile(effectiveInputPath, rewritten, "utf8")
       }
     }
 
@@ -334,11 +385,14 @@ export const DocConvertTool = Tool.define("doc.convert", {
       const rendered = await renderMermaidBlocks(
         inputText,
         diagramDir,
-        path.dirname(effectiveInputPath),
         diagramPrefix,
       )
       mermaidRendered = rendered.count
-      await fs.writeFile(effectiveInputPath, rendered.updated, "utf8")
+      const rewritten = rewriteImageLinks(rendered.updated, sourceDir)
+      await fs.writeFile(effectiveInputPath, rewritten, "utf8")
+    } else if (!docStyle && effectiveInputPath !== inputPath) {
+      const rewritten = rewriteImageLinks(inputText, sourceDir)
+      await fs.writeFile(effectiveInputPath, rewritten, "utf8")
     }
 
     const args = [effectiveInputPath, "-o", outputPath]
