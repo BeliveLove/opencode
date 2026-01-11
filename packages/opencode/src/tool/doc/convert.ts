@@ -642,7 +642,7 @@ async function renderMermaidBlocks(
   return { updated, count: index }
 }
 
-export const DocConvertTool = Tool.define("doc.convert", {
+export const DocConvertTool = Tool.define("doc_convert", {
   description: DESCRIPTION,
   parameters: z.object({
     inputPath: z.string().describe("Path to the input file (absolute or relative)"),
@@ -832,4 +832,3 @@ export const DocConvertTool = Tool.define("doc.convert", {
     }
   },
 })
-
