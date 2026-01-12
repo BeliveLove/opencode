@@ -32,12 +32,10 @@ async function ensureReadableFile(ctx: Tool.Context, filePath: string) {
 
 async function createOcrWorker(lang: string, langPath?: string) {
   const tesseract = await import("tesseract.js")
-  const worker = await tesseract.createWorker({
+  const worker = await tesseract.createWorker(lang, 1, {
     logger: () => {},
     langPath,
   })
-  await worker.loadLanguage(lang)
-  await worker.initialize(lang)
   return worker
 }
 
@@ -68,7 +66,7 @@ async function ocrPdfBuffer(
     pdfjs.GlobalWorkerOptions.workerSrc = ""
   }
 
-  const doc = await pdfjs.getDocument({ data: buffer, disableWorker: true }).promise
+  const doc = await pdfjs.getDocument({ data: buffer }).promise
   const totalPages = doc.numPages
   const limit = Math.min(totalPages, opts.maxPages ?? totalPages)
   const pages: Array<{ page: number; text: string; confidence?: number }> = []
@@ -79,8 +77,7 @@ async function ocrPdfBuffer(
       const page = await doc.getPage(i)
       const viewport = page.getViewport({ scale: opts.scale })
       const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height))
-      const ctx = canvas.getContext("2d")
-      await page.render({ canvasContext: ctx as any, viewport }).promise
+      await page.render({ canvas: canvas as any, viewport }).promise
       const png = canvas.toBuffer("image/png")
       const result = await worker.recognize(png)
       const text = result.data?.text ?? ""

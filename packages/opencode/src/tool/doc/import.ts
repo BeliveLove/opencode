@@ -371,7 +371,7 @@ async function extractPdfText(
     pdfjs.GlobalWorkerOptions.workerSrc = ""
   }
   const data = await file.arrayBuffer()
-  const loadingTask = pdfjs.getDocument({ data, disableWorker: true })
+  const loadingTask = pdfjs.getDocument({ data })
   const doc = await loadingTask.promise
   const totalPages = doc.numPages
   const limit = Math.min(totalPages, opts.maxPages ?? totalPages)
