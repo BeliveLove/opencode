@@ -1,0 +1,7 @@
+Create a new skill using the CLI command below.
+Note: the CLI requires --description when not running interactively.
+
+!`opencode skill create $ARGUMENTS`
+
+If creation failed due to missing description, ask the user to re-run with:
+--description "..."

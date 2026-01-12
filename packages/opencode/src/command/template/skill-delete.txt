@@ -1,0 +1,6 @@
+Delete a skill using the CLI command below.
+If the skill is not found, ask for the correct name or scope.
+
+!`opencode skill delete $ARGUMENTS`
+
+Confirm deletion and mention the removed path.

@@ -23,6 +23,12 @@ import PROMPT_DOC_DIFF_SUMMARY from "./template/doc-diff-summary.txt"
 import PROMPT_DOC_TRANSLATE from "./template/doc-translate.txt"
 import PROMPT_DOC_REDACTION_PLAN from "./template/doc-redaction-plan.txt"
 import PROMPT_DOC_CONVERT from "./template/doc-convert.txt"
+import PROMPT_SKILL_CREATE from "./template/skill-create.txt"
+import PROMPT_SKILL_LIST from "./template/skill-list.txt"
+import PROMPT_SKILL_SHOW from "./template/skill-show.txt"
+import PROMPT_SKILL_INSTALL from "./template/skill-install.txt"
+import PROMPT_SKILL_UPDATE from "./template/skill-update.txt"
+import PROMPT_SKILL_DELETE from "./template/skill-delete.txt"
 import { MCP } from "../mcp"
 
 export namespace Command {
@@ -89,6 +95,12 @@ export namespace Command {
     NOVEL_IDEA: "novel-idea",
     NOVEL_POLISH: "novel-polish",
     NOVEL_EXPORT: "novel-export",
+    SKILL_CREATE: "skill-create",
+    SKILL_LIST: "skill-list",
+    SKILL_SHOW: "skill-show",
+    SKILL_INSTALL: "skill-install",
+    SKILL_UPDATE: "skill-update",
+    SKILL_DELETE: "skill-delete",
   } as const
 
   const state = Instance.state(async () => {
@@ -264,6 +276,54 @@ export namespace Command {
           return PROMPT_NOVEL_EXPORT
         },
         hints: hints(PROMPT_NOVEL_EXPORT),
+      },
+      [Default.SKILL_CREATE]: {
+        name: Default.SKILL_CREATE,
+        description: "Create a new skill (CLI wrapper)",
+        get template() {
+          return PROMPT_SKILL_CREATE
+        },
+        hints: hints(PROMPT_SKILL_CREATE),
+      },
+      [Default.SKILL_LIST]: {
+        name: Default.SKILL_LIST,
+        description: "List available skills (CLI wrapper)",
+        get template() {
+          return PROMPT_SKILL_LIST
+        },
+        hints: hints(PROMPT_SKILL_LIST),
+      },
+      [Default.SKILL_SHOW]: {
+        name: Default.SKILL_SHOW,
+        description: "Show a skill's content (CLI wrapper)",
+        get template() {
+          return PROMPT_SKILL_SHOW
+        },
+        hints: hints(PROMPT_SKILL_SHOW),
+      },
+      [Default.SKILL_INSTALL]: {
+        name: Default.SKILL_INSTALL,
+        description: "Install skills from npm/pypi/url (CLI wrapper)",
+        get template() {
+          return PROMPT_SKILL_INSTALL
+        },
+        hints: hints(PROMPT_SKILL_INSTALL),
+      },
+      [Default.SKILL_UPDATE]: {
+        name: Default.SKILL_UPDATE,
+        description: "Update skills from npm/pypi/url (CLI wrapper)",
+        get template() {
+          return PROMPT_SKILL_UPDATE
+        },
+        hints: hints(PROMPT_SKILL_UPDATE),
+      },
+      [Default.SKILL_DELETE]: {
+        name: Default.SKILL_DELETE,
+        description: "Delete a skill (CLI wrapper)",
+        get template() {
+          return PROMPT_SKILL_DELETE
+        },
+        hints: hints(PROMPT_SKILL_DELETE),
       },
     }
 

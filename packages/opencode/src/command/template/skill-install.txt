@@ -1,0 +1,8 @@
+Install skill(s) using the CLI command below.
+If no arguments were provided or the command fails, explain the error and ask for the missing inputs.
+
+!`opencode skill install $ARGUMENTS`
+
+After running, summarize what was installed and where.
+Default global location is ~/.config/opencode/skill/<name>/SKILL.md.
+If this is the TUI, remind the user to restart OpenCode if the skill list does not refresh.

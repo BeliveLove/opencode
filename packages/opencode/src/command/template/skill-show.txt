@@ -1,0 +1,6 @@
+Show a skill's content using the CLI command below.
+If the skill is not found, ask for the correct name or scope.
+
+!`opencode skill show $ARGUMENTS`
+
+If the output is long, summarize the purpose and mention the path shown.

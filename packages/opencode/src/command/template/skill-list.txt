@@ -1,0 +1,5 @@
+List available skills using the CLI command below.
+
+!`opencode skill list $ARGUMENTS`
+
+Summarize the available skills and note whether they are builtin or file-based.
