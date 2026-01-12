@@ -292,6 +292,37 @@ function splitFrontMatter(markdown: string) {
   }
 }
 
+function stripYamlQuotes(value: string) {
+  const trimmed = value.trim()
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1)
+  }
+  return trimmed
+}
+
+function readFrontMatterValue(markdown: string, key: string) {
+  const split = splitFrontMatter(markdown)
+  const frontMatter = split.frontMatter
+  if (!frontMatter) return undefined
+  const lines = frontMatter.split(/\r?\n/).slice(1, -1)
+  const matcher = new RegExp(`^\\s*${key}\\s*:\\s*(.+)$`)
+  for (const line of lines) {
+    const match = matcher.exec(line)
+    if (match?.[1]) return stripYamlQuotes(match[1].trim())
+  }
+  return undefined
+}
+
+function parseSlideLevel(markdown: string) {
+  const raw = readFrontMatterValue(markdown, "slide-level") ?? readFrontMatterValue(markdown, "slide_level")
+  if (!raw) return undefined
+  const value = Number(raw)
+  if (!Number.isFinite(value)) return undefined
+  const level = Math.round(value)
+  if (level < 1 || level > 6) return undefined
+  return level
+}
+
 function extractHeadings(markdown: string): Heading[] {
   const headings: Heading[] = []
   const lines = markdown.split(/\r?\n/)
@@ -673,6 +704,7 @@ export const DocConvertTool = Tool.define("doc_convert", {
     const pandocPath = await Pandoc.filepath()
     const outputExt = path.extname(outputPath).toLowerCase()
     const toDocx = outputExt === ".docx" || params.to?.toLowerCase() === "docx"
+    const toPptx = outputExt === ".pptx" || params.to?.toLowerCase() === "pptx"
 
     let effectiveInputPath = inputPath
     let referenceDocxPath: string | undefined
@@ -683,6 +715,7 @@ export const DocConvertTool = Tool.define("doc_convert", {
     const docStyle = extractDocStylePayload(inputText)
     const sourceDir = path.dirname(inputPath)
     const shouldNormalize = toDocx || outputExt === ".pdf"
+    const slideLevel = toPptx ? parseSlideLevel(docStyle?.styledMarkdown ?? inputText) : undefined
 
     const preprocessMarkdown = (markdown: string) => {
       let updated = markdown
@@ -787,6 +820,10 @@ export const DocConvertTool = Tool.define("doc_convert", {
       }
       referenceDocxPath = await createReferenceDocx(pandocPath, fonts, Instance.directory)
       extraArgs.push("--reference-doc", referenceDocxPath)
+    }
+
+    if (toPptx && slideLevel !== undefined && !hasArg(extraArgs, "--slide-level")) {
+      extraArgs.push("--slide-level", String(slideLevel))
     }
 
     const hasResourcePath = hasArg(extraArgs, "--resource-path")
