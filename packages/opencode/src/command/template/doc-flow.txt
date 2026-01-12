@@ -3,6 +3,7 @@
 
 规则：
 - 如果参数里包含/看起来像文件路径（.md/.txt/.docx/.pptx/.xlsx/.pdf），先用 `doc_import` 导入后再判断。
+- 对 docx/pdf/pptx/xlsx 优先使用用户自定义 skill（名称分别为 `docx` / `pdf` / `pptx` / `xlsx`，若存在）完成导入/生成/导出；如无对应 skill，再使用 `doc_convert`（pandoc）兜底。
 - 领域判断优先根据仓库信号；本仓库为软件工程领域时直接进入该域。
 - 输出文档清单时允许多选，优先推荐仓库已有模板/文档类型。
 - 不要擅自定“必须产出”的文档；用“建议/可选”并让用户确认。
@@ -11,8 +12,9 @@
 - 内置模板优先使用（模板ID如下）；若无匹配模板，可让 `doc_template_render` 基于领域 + doc_type 自动生成模板：
   doc.default, tech.prd, tech.tdd, tech.sdd, eng.requirements_analysis, eng.feasibility_study,
   qa.test_plan, ops.runbook, ops.postmortem, security.threat_model,
-  eng.release_notes, mgmt.meeting_minutes, mgmt.weekly_report, legal.contract_review_notes.
-- 每个 doc_type 必须落地一个模板 Markdown 文件（template_md）；若用户未指定路径，默认写入 `.opencode/doc/templates/<doc_type>.template.md`。
+  eng.release_notes, mgmt.meeting_minutes, mgmt.weekly_report, legal.contract_review_notes,
+  slides.deck, data.spreadsheet.
+- 每个 doc_type 必须落地一个模板文件（template_md）；若用户未指定路径，默认写入 `.opencode/doc/templates/<doc_type>.template.md`。
 - 若未指定模板且无匹配内置模板类型，使用 `doc_template_render` 自动推断模板（必要时再用 `doc-outline` 补细节）。
 - `doc-style` 是 skill，必须在填充正文后调用以整理样式与元信息。
 - 如果输入是 .doc/.docx 且需要样式统一：先用 `doc_convert` 转成 .md，再走 `doc-style`，最后再 `doc_convert` 回 .docx。
@@ -28,7 +30,7 @@
    - 用户已提供模板路径：直接使用并必要时 `doc_import` 验证内容。
    - 使用 `doc_template_render` 输出并写入 template_md（无内置模板时用自动推断模板）。
    - 若仅有 `doc-outline` 结果，将 outline 转成 Markdown 骨架再写入。
-5) 由 template_md 生成 reference docx（template_docx）：调用 `doc_convert` md->docx，后续导出时用 `--reference-doc` 引用。
+5) 由 template_md 生成 reference docx（template_docx）：调用 `doc_convert` md->docx，后续导出时用 `--reference-doc` 引用（幻灯片类型跳过此步骤）。
 6) 汇总所有骨架/模板，请用户确认/补充缺失信息。
 7) 质量数据准备检查：收集图表/表格清单、数据来源、口径/时间范围、关键指标值；缺失项写入 open_questions 并要求用户确认。
 8) 用户确认后，对每个 doc_type 调用 `doc-fill` 生成正文。
@@ -38,8 +40,8 @@
 12) 用户确认后，若需要导出 Word：
    - 输入为 .doc/.docx：`doc_convert` docx->md -> `doc-style` -> 如含 Mermaid 则 `doc_diagram_render` -> `doc_convert` md->docx（附带 toc 与 reference docx）。
    - 输入为 .md：`doc-style` -> 如含 Mermaid 则 `doc_diagram_render` -> `doc_convert` md->docx（附带 toc 与 reference docx）。
+    - 若导出 PPTX：用 `doc_convert` 将 Markdown -> PPTX（需 pandoc 支持 PPTX）。
 13) 如涉及对外发布/分享，导出前先运行 `doc_redact`。
 14) 导出后可选质量校验：`doc_import` 回导出文档并再次 `doc-review`，确认目录/列表/表格/图注无回退。
 
 输出要求：每个阶段都清晰标注（Phase A/B/C...），多文档输出需按 doc_type 分组。
-

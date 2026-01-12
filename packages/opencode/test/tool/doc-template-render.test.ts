@@ -91,6 +91,25 @@ describe("tool.doc_template_render", () => {
     expect(result.metadata.inferred).toBe(true)
   })
 
+  test("renders slide deck template and resolves ppt alias", async () => {
+    const tool = await DocTemplateRenderTool.init()
+    const deck = await tool.execute(
+      {
+        templateId: "slides.deck",
+        variables: { title: "Roadmap", owner: "Alice", date: "2026-01-12", subtitle: "Q1-Q2" },
+      },
+      ctx,
+    )
+    expect(deck.output).toContain("# Roadmap")
+    expect(deck.output).toContain("# Agenda")
+    expect(deck.metadata.templateId).toBe("slides.deck")
+
+    const alias = await tool.execute({ templateId: "ppt", variables: { title: "Pitch" } }, ctx)
+    expect(alias.output).toContain("# Agenda")
+    expect(alias.metadata.templateId).toBe("ppt")
+    expect(alias.metadata.inferred).toBe(true)
+  })
+
   test("writes template markdown and generates reference docx", async () => {
     const original = process.env.OPENCODE_PANDOC_BIN
     await using tmp = await tmpdir({

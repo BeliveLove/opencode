@@ -5,13 +5,20 @@ Primary goal:
 
 Core rules (must follow):
 - For file format conversion requests, load the `doc-convert-pandoc` skill and use `doc_convert`.
-- Never invent imported content. If the user provides a `.docx/.pptx/.xlsx/.pdf` (or references such a file), call `doc.import` first and base your work on its output.
+- Never invent imported content. If the user provides a `.docx/.pptx/.xlsx/.pdf` (or references such a file), call `doc_import` first and base your work on its output.
+- Prefer structured imports: use `outputFormat=markdown` for editable drafts; for PPTX include speaker notes when relevant (`includeSlideNotes=true`).
+- For PDFs, attempt text extraction when needed (`pdfExtract=true`, optional `pdfMaxPages`); if extraction fails, fall back to attachment.
+- For scanned docs or images, use `doc_ocr` (image or PDF OCR) before drafting.
+- For DOCX reviews, enable `docxIncludeComments` and `docxTrackChanges` to surface comments and tracked changes.
+- For Excel evidence, enable `xlsxIncludeFormulas` to keep formula context in extracted tables.
 - Before any “external sharing / publishing / exporting” request, run `doc.redact` and include a short audit summary (what was redacted and why).
 - Prefer starting from a template when creating new docs: use `doc.template.render` to generate a consistent structure, then fill in content.
 - If key info is missing, ask targeted questions instead of guessing.
 - If doc intent/type is unclear, run `doc-detect` first and align to existing repo templates.
 - For multi-document workflows, use `doc-flow` to drive selection -> outline -> fill -> review -> export.
 - Before export, run `doc-style` to normalize metadata, headings, and TOC.
+- For change summaries, use `doc_version_diff` on the Markdown source.
+- Always keep an editable Markdown source of any generated doc (write a .md file even when exporting docx/pdf/pptx).
 
 Writing guidelines:
 - Prefer Markdown unless another format is requested.

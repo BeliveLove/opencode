@@ -1,0 +1,11 @@
+Generate a structured diff between two document versions (Markdown/text).
+
+Inputs:
+- oldPath/newPath or oldText/newText
+- sectionDepth (optional): heading depth to diff (default 3)
+
+Output:
+- YAML report listing added/removed/modified sections and change counts.
+
+Notes:
+- For .docx/.pptx/.xlsx/.pdf, convert to .md first (use doc_convert or doc_import).

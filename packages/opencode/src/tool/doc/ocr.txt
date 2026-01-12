@@ -1,0 +1,10 @@
+Run OCR on an image or PDF and return extracted text.
+
+Inputs:
+- inputPath: image (.png/.jpg) or PDF
+- language: tesseract language code (default eng)
+- languagePath: optional custom path/URL to language data
+- pdfMaxPages/pdfScale: OCR controls for PDFs
+
+Output:
+- YAML report + extracted text (markdown or plain text)

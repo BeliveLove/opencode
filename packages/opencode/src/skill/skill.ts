@@ -130,6 +130,9 @@ export namespace Skill {
         "- Build doc_catalog by prioritizing existing repo templates/docs; otherwise propose a standard set and mark required=false.",
         "- Do not finalize selection; ask the user to choose multiple doc types unless already specified.",
         "- After selection: use templates when available (`doc_template_render`); if no built-in template matches, use `doc_template_render` auto inference (and fall back to `doc-outline` if needed).",
+        "- Treat slides/spreadsheets as first-class doc types; use built-in templates like `slides.deck` and `data.spreadsheet` when requested.",
+        "- For docx/pdf/pptx/xlsx workflows, prefer user-defined skills named `docx` / `pdf` / `pptx` / `xlsx` if they exist; use `doc_convert` (pandoc) as the fallback path.",
+        "- For PPTX export, use `doc_convert` to convert Markdown -> PPTX (pandoc required).",
         "- Materialize a template Markdown file (template_md) per doc_type; if no path is specified, default to `.opencode/doc/templates/<doc_type>.template.md`.",
         "- If no matching built-in template_id exists, let `doc_template_render` auto-infer the template Markdown.",
         "- Generate reference_docx from template_md via `doc_convert` and pass it to pandoc with `--reference-doc` when exporting to docx.",
@@ -853,4 +856,3 @@ export namespace Skill {
     return state().then((x) => Object.values(x))
   }
 }
-

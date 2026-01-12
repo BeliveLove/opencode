@@ -2,4 +2,4 @@ Render a documentation template (Markdown) with optional variable substitution.
 
 Use built-in templates when they exist; otherwise infer a structure from the domain + doc_type in the templateId (e.g., tech.architecture).
 
-Optionally write the rendered Markdown to outputPath, and/or generate a reference .docx from it via pandoc.
+Optionally write the rendered output to outputPath, and/or generate a reference .docx from Markdown via pandoc.

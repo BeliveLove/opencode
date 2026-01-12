@@ -12,12 +12,13 @@
 
 ### 0.1 当前已存在的能力（opencode）
 - `doc` agent：`packages/opencode/src/agent/prompt/doc.txt`（当前更像“写 README 的文档助手”，缺少文档工程化的治理与工具编排）
+- 文档工具：`doc_import` / `doc_convert` / `doc_template_render` / `doc_redact` / `doc_diagram_render` / `doc_version_diff` / `doc_ocr`
 - 通用工具：`read/write/edit/patch/grep/glob/bash/...`
   - `read` 支持**图片与 PDF 作为附件**读取，但会将 `.doc/.docx/.xls/.xlsx/.ppt/.pptx` 等视为二进制并拒绝直接读取文本
 
 ### 0.2 与“企业文档工程助手”目标的关键差距（Gap）
 从产品视角，现状主要缺少：
-1. **二进制文档导入与可读抽取**（Word/Excel/PPT/PDF）
+1. **二进制文档导入与可读抽取**已实现基础版，但仍缺样式保真、批注/修订深度绑定与复杂表格结构化
 2. **企业文档模板体系**（PRD/TDD/测试计划/发布说明/会议纪要/制度/合同要点……）与可参数化渲染
 3. **文档版本语义**（发布/归档/回滚/差异摘要）与变更可追溯
 4. **审阅流程与合规检查**（敏感信息、必填条款、格式规范、风险提示）
@@ -78,6 +79,7 @@ Doc Agent 是企业内部的**文档工程助手**：把文档生产从“手工
 
 ### 3.1 内容生产能力
 - 文档导入：支持 `.md/.txt/.docx/.pptx/.xlsx/.pdf`
+- OCR：支持图片/PDF 的 OCR 提取（作为补充输入）
 - 结构化与规范化：大纲、章节、表格/列表的最小可用抽取（允许不保真，但要有明确告警）
 - 模板库：常用企业文档模板（≥10 类）
 - 参数化渲染：基于变量生成可编辑的 Markdown 草稿
@@ -88,7 +90,7 @@ Doc Agent 是企业内部的**文档工程助手**：把文档生产从“手工
 - 不确定性管理：遇到缺信息必须提问，不允许编造
 
 ### 3.3 协作与生命周期（接口先行）
-- 版本差异摘要（计划）：`doc.version.diff`
+- 版本差异摘要（已实现基础）：`doc_version_diff`
 - 审阅流转（计划）：`doc.review.*`
 - 跨文档关联（计划）：`doc.link.*`
 - 导出（计划）：`doc.export`（HTML/PDF/DOCX 等）
@@ -97,12 +99,18 @@ Doc Agent 是企业内部的**文档工程助手**：把文档生产从“手工
 
 ## 4. 工具规范（Tool Contracts）
 
-### 4.1 `doc.import`（导入与可读抽取）
+### 4.1 `doc_import`（导入与可读抽取）
 目标：把“二进制文档”纳入工作流，输出可读文本或附件。
 
 - 输入：
   - `filePath`：文件路径（相对/绝对）
   - `outputFormat`：`text|markdown`
+  - `includeSlideNotes`：是否包含 PPTX 讲者备注（可选）
+  - `pdfExtract`：是否尝试提取 PDF 文本（可选，失败则回退附件）
+  - `pdfMaxPages`：PDF 最大抽取页数（可选）
+  - `docxIncludeComments`：是否追加 DOCX 批注（可选）
+  - `docxTrackChanges`：是否输出修订标记（可选）
+  - `xlsxIncludeFormulas`：是否保留公式文本（可选）
   - `maxChars`：最大输出字符数（用于截断）
 - 输出：
   - `output`：提取文本或提示信息
@@ -110,8 +118,10 @@ Doc Agent 是企业内部的**文档工程助手**：把文档生产从“手工
   - `attachments`：仅在 PDF 等场景返回文件附件
 - 支持：
   - `.md/.txt`：直接读取文本
-  - `.docx/.pptx/.xlsx`：基于 OOXML（zip）做**best-effort** 文本抽取（不保证排版/表格/公式还原，必须附带 `warnings`）
-  - `.pdf`：作为附件返回（不做本地文本提取；依赖模型 PDF 输入能力理解）
+  - `.docx`：支持 Markdown 抽取 + 可选批注/修订标记（best-effort）
+  - `.pptx`：支持结构化段落/列表抽取（可选讲者备注）
+  - `.xlsx`：支持结构化表格抽取（可选公式文本）
+  - `.pdf`：默认作为附件返回；可启用 `pdfExtract` 做文本抽取（best-effort）
 - 不支持：
   - `.doc/.xls/.ppt`：提示转换为现代格式
 
@@ -128,8 +138,20 @@ Doc Agent 是企业内部的**文档工程助手**：把文档生产从“手工
   - 脱敏后的文本 + YAML 报告（命中数量与样例）
 
 状态：**已实现（基础）**（见 `packages/opencode/src/tool/doc/redact.ts`）
+### 4.3 `doc_ocr`（OCR）
+目标：对图片或 PDF 做 OCR 提取，作为导入材料补充。
 
-### 4.3 `doc.template.render`（模板渲染）
+- 输入：
+  - `inputPath`
+  - `language`：OCR 语言（默认 eng）
+  - `languagePath`：自定义语言包路径/URL（可选）
+  - `pdfMaxPages` / `pdfScale`：PDF OCR 控制参数
+- 输出：
+  - YAML 报告 + 提取文本（Markdown 或 plain text）
+
+状态：**已实现（基础）**（见 `packages/opencode/src/tool/doc/ocr.ts`）
+
+### 4.4 `doc.template.render`（模板渲染）
 目标：输出企业文档模板（Markdown）供后续编辑/导出，并支持最小的变量替换。
 
 - 输入：
@@ -141,8 +163,8 @@ Doc Agent 是企业内部的**文档工程助手**：把文档生产从“手工
 
 状态：**已实现（基础）**（见 `packages/opencode/src/tool/doc/template-render.ts`）
 
-### 4.4 计划中的工具（接口定义先行）
-- `doc.version.diff`：结构化 diff（按章节/字段），输出变更摘要
+### 4.5 计划中的工具（接口定义先行）
+- `doc_version_diff`：结构化 diff（按章节/字段），输出变更摘要（已实现基础）
 - `doc.review.create|submit|resolve`：审阅流转与意见管理
 - `doc.link.upsert|search`：引用关系与溯源
 - `doc.export`：导出 HTML/PDF/DOCX（可依赖外部转换器/平台服务）
@@ -165,7 +187,8 @@ Skills 是“可复用工作流契约”，由 Agent 编排并调用 Tools：
 
 Doc Agent 必须做到：
 - 默认先问清：文档类型、受众、保密级别、交付格式、截止时间、是否可出网
-- 遇到 `.docx/.pptx/.xlsx/.pdf`：必须先调用 `doc.import`，不允许凭空猜测内容
+- 遇到 `.docx/.pptx/.xlsx/.pdf`：必须先调用 `doc_import`，不允许凭空猜测内容
+- 遇到扫描件/图片型 PDF：必须先调用 `doc_ocr` 获取文本，再进入写作/审阅
 - 对外分享/发布：必须先调用 `doc.redact`，并给出可审计的脱敏摘要
 - 输出必须包含：
   - 交付物路径建议（放哪、命名、版本号）
@@ -177,6 +200,7 @@ Doc Agent 必须做到：
 ## 7. 验收标准（产品正确性与完备性）
 
 - 能导入 `.docx/.pptx/.xlsx` 并抽取可读文本（允许不还原排版，但必须有告警）
+- 能对图片/PDF 做 OCR 并输出文本（best-effort）
 - 能对文本脱敏并输出报告（命中规则与数量）
 - 能输出 ≥10 类常用企业文档模板（可编辑 Markdown）
 - Agent 能按规范调用工具（导入优先、脱敏优先、不给编造内容）
@@ -189,4 +213,3 @@ Doc Agent 必须做到：
 - doc tools：`packages/opencode/src/tool/doc/*`
 - tool 注册：`packages/opencode/src/tool/registry.ts`
 - tests：`packages/opencode/test/tool/*`
-

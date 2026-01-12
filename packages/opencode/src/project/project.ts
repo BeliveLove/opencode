@@ -1,5 +1,6 @@
 import z from "zod"
 import fs from "fs/promises"
+import os from "os"
 import { Filesystem } from "../util/filesystem"
 import path from "path"
 import { $ } from "bun"
@@ -48,7 +49,10 @@ export namespace Project {
     log.info("fromDirectory", { directory })
 
     const { id, sandbox, worktree, vcs } = await iife(async () => {
-      const matches = Filesystem.up({ targets: [".git"], start: directory })
+      const normalizedDir = Filesystem.normalizePath(directory)
+      const tempRoot = Filesystem.normalizePath(os.tmpdir())
+      const stopAt = Filesystem.contains(tempRoot, normalizedDir) ? tempRoot : undefined
+      const matches = Filesystem.up({ targets: [".git"], start: directory, stop: stopAt })
       const git = await matches.next().then((x) => x.value)
       await matches.return()
       if (git) {
