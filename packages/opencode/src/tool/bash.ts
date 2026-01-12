@@ -2,13 +2,13 @@ import z from "zod"
 import { spawn } from "child_process"
 import { Tool } from "./tool"
 import path from "path"
-import fs from "fs/promises"
 import DESCRIPTION from "./bash.txt"
 import { Log } from "../util/log"
 import { Instance } from "../project/instance"
 import { lazy } from "@/util/lazy"
 import { Language } from "web-tree-sitter"
 
+import { $ } from "bun"
 import { Filesystem } from "@/util/filesystem"
 import { fileURLToPath } from "url"
 import { Flag } from "@/flag/flag.ts"
@@ -50,34 +50,6 @@ const parser = lazy(async () => {
   return p
 })
 
-function stripQuotes(input: string) {
-  const s = input.trim()
-  if ((s.startsWith("'") && s.endsWith("'")) || (s.startsWith('"') && s.endsWith('"'))) return s.slice(1, -1)
-  return s
-}
-
-function normalizeGitBashPath(p: string) {
-  // Git Bash on Windows returns Unix-style paths like /c/Users/...
-  if (process.platform === "win32" && p.match(/^\/[a-z]\//)) {
-    return p.replace(/^\/([a-z])\//, (_, drive) => `${drive.toUpperCase()}:\\`).replace(/\//g, "\\")
-  }
-  return p
-}
-
-function errorMessage(error: unknown) {
-  if (!error) return ""
-  if (typeof error === "string") return error
-  if (typeof error === "object" && "message" in error) {
-    const msg = (error as any).message
-    if (typeof msg === "string") return msg
-  }
-  try {
-    return JSON.stringify(error)
-  } catch {
-    return String(error)
-  }
-}
-
 // TODO: we may wanna rename this tool so it works better on other shells
 export const BashTool = Tool.define("bash", async () => {
   const shell = Shell.acceptable()
@@ -113,7 +85,7 @@ export const BashTool = Tool.define("bash", async () => {
         throw new Error("Failed to parse command")
       }
       const directories = new Set<string>()
-      if (!Filesystem.contains(Instance.directory, cwd)) directories.add(cwd)
+      if (!Instance.containsPath(cwd)) directories.add(cwd)
       const patterns = new Set<string>()
       const always = new Set<string>()
 
@@ -139,16 +111,21 @@ export const BashTool = Tool.define("bash", async () => {
         if (["cd", "rm", "cp", "mv", "mkdir", "touch", "chmod", "chown"].includes(command[0])) {
           for (const arg of command.slice(1)) {
             if (arg.startsWith("-") || (command[0] === "chmod" && arg.startsWith("+"))) continue
-            const raw = stripQuotes(arg)
-            const resolved = normalizeGitBashPath(raw)
-            const normalized = (() => {
-              if (!resolved) return ""
-              if (process.platform === "win32" && resolved.match(/^[a-z]:[\\/]/i)) return path.win32.resolve(resolved)
-              if (path.isAbsolute(resolved)) return path.resolve(resolved)
-              return path.resolve(cwd, resolved)
-            })()
-            log.info("resolved path", { arg, normalized })
-            if (normalized && !Filesystem.contains(Instance.directory, normalized)) directories.add(normalized)
+            const resolved = await $`realpath ${arg}`
+              .cwd(cwd)
+              .quiet()
+              .nothrow()
+              .text()
+              .then((x) => x.trim())
+            log.info("resolved path", { arg, resolved })
+            if (resolved) {
+              // Git Bash on Windows returns Unix-style paths like /c/Users/...
+              const normalized =
+                process.platform === "win32" && resolved.match(/^\/[a-z]\//)
+                  ? resolved.replace(/^\/([a-z])\//, (_, drive) => `${drive.toUpperCase()}:\\`).replace(/\//g, "\\")
+                  : resolved
+              if (!Instance.containsPath(normalized)) directories.add(normalized)
+            }
           }
         }
 
@@ -177,14 +154,9 @@ export const BashTool = Tool.define("bash", async () => {
         })
       }
 
-      const spawnCwd = await fs
-        .access(cwd)
-        .then(() => cwd)
-        .catch(() => Instance.directory)
-
       const proc = spawn(params.command, {
         shell,
-        cwd: spawnCwd,
+        cwd,
         env: {
           ...process.env,
         },
@@ -219,7 +191,6 @@ export const BashTool = Tool.define("bash", async () => {
       let timedOut = false
       let aborted = false
       let exited = false
-      let procError: unknown = null
 
       const kill = () => Shell.killTree(proc, { exited: () => exited })
 
@@ -240,7 +211,7 @@ export const BashTool = Tool.define("bash", async () => {
         void kill()
       }, timeout + 100)
 
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
         const cleanup = () => {
           clearTimeout(timeoutTimer)
           ctx.abort.removeEventListener("abort", abortHandler)
@@ -254,9 +225,8 @@ export const BashTool = Tool.define("bash", async () => {
 
         proc.once("error", (error) => {
           exited = true
-          procError = error
           cleanup()
-          resolve()
+          reject(error)
         })
       })
 
@@ -274,15 +244,11 @@ export const BashTool = Tool.define("bash", async () => {
         output += "\n\n<bash_metadata>\n" + resultMetadata.join("\n") + "\n</bash_metadata>"
       }
 
-      if (procError) {
-        output += `\n\n<bash_error>\n${errorMessage(procError)}\n</bash_error>`
-      }
-
       return {
         title: params.description,
         metadata: {
           output: output.length > MAX_METADATA_LENGTH ? output.slice(0, MAX_METADATA_LENGTH) + "\n\n..." : output,
-          exit: procError ? 1 : proc.exitCode,
+          exit: proc.exitCode,
           description: params.description,
         },
         output,
