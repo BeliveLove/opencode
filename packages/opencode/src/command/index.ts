@@ -14,19 +14,12 @@ import PROMPT_NOVEL_CHECK from "./template/novel-check.txt"
 import PROMPT_NOVEL_IDEA from "./template/novel-idea.txt"
 import PROMPT_NOVEL_POLISH from "./template/novel-polish.txt"
 import PROMPT_NOVEL_EXPORT from "./template/novel-export.txt"
-import PROMPT_DOC_OUTLINE from "./template/doc-outline.txt"
-import PROMPT_DOC_DETECT from "./template/doc-detect.txt"
 import PROMPT_DOC_FLOW from "./template/doc-flow.txt"
-import PROMPT_DOC_FILL from "./template/doc-fill.txt"
-import PROMPT_DOC_REVIEW from "./template/doc-review.txt"
-import PROMPT_DOC_DIFF_SUMMARY from "./template/doc-diff-summary.txt"
-import PROMPT_DOC_TRANSLATE from "./template/doc-translate.txt"
-import PROMPT_DOC_REDACTION_PLAN from "./template/doc-redaction-plan.txt"
-import PROMPT_DOC_CONVERT from "./template/doc-convert.txt"
 import PROMPT_SKILL_CREATE from "./template/skill-create.txt"
 import PROMPT_SKILL_LIST from "./template/skill-list.txt"
 import PROMPT_SKILL_SHOW from "./template/skill-show.txt"
 import PROMPT_SKILL_INSTALL from "./template/skill-install.txt"
+import PROMPT_SKILL_INIT from "./template/skill-init.txt"
 import PROMPT_SKILL_UPDATE from "./template/skill-update.txt"
 import PROMPT_SKILL_DELETE from "./template/skill-delete.txt"
 import { MCP } from "../mcp"
@@ -77,15 +70,7 @@ export namespace Command {
   export const Default = {
     INIT: "init",
     REVIEW: "review",
-    DOC_OUTLINE: "doc-outline",
-    DOC_DETECT: "doc-detect",
     DOC_FLOW: "doc-flow",
-    DOC_FILL: "doc-fill",
-    DOC_REVIEW: "doc-review",
-    DOC_DIFF_SUMMARY: "doc-diff-summary",
-    DOC_TRANSLATE: "doc-translate",
-    DOC_REDACTION_PLAN: "doc-redaction-plan",
-    DOC_CONVERT: "doc-convert",
     NOVEL_INIT: "novel-init",
     NOVEL_LIST: "novel-list",
     NOVEL_USE: "novel-use",
@@ -99,6 +84,7 @@ export namespace Command {
     SKILL_LIST: "skill-list",
     SKILL_SHOW: "skill-show",
     SKILL_INSTALL: "skill-install",
+    SKILL_INIT: "skill-init",
     SKILL_UPDATE: "skill-update",
     SKILL_DELETE: "skill-delete",
   } as const
@@ -124,86 +110,14 @@ export namespace Command {
         subtask: true,
         hints: hints(PROMPT_REVIEW),
       },
-      [Default.DOC_OUTLINE]: {
-        name: Default.DOC_OUTLINE,
-        description: "Generate doc outline (sources + gaps)",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_OUTLINE
-        },
-        hints: hints(PROMPT_DOC_OUTLINE),
-      },
-      [Default.DOC_DETECT]: {
-        name: Default.DOC_DETECT,
-        description: "Detect doc intent/type and recommend template",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_DETECT
-        },
-        hints: hints(PROMPT_DOC_DETECT),
-      },
       [Default.DOC_FLOW]: {
         name: Default.DOC_FLOW,
-        description: "Doc workflow: detect -> outline -> fill -> review -> export",
+        description: "Doc workflow using docx/pdf/pptx/xlsx skills",
         agent: "doc",
         get template() {
           return PROMPT_DOC_FLOW
         },
         hints: hints(PROMPT_DOC_FLOW),
-      },
-      [Default.DOC_FILL]: {
-        name: Default.DOC_FILL,
-        description: "Fill template without inventing facts",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_FILL
-        },
-        hints: hints(PROMPT_DOC_FILL),
-      },
-      [Default.DOC_REVIEW]: {
-        name: Default.DOC_REVIEW,
-        description: "Review doc and list issues + fixes",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_REVIEW
-        },
-        hints: hints(PROMPT_DOC_REVIEW),
-      },
-      [Default.DOC_DIFF_SUMMARY]: {
-        name: Default.DOC_DIFF_SUMMARY,
-        description: "Summarize changes between two doc versions",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_DIFF_SUMMARY
-        },
-        hints: hints(PROMPT_DOC_DIFF_SUMMARY),
-      },
-      [Default.DOC_TRANSLATE]: {
-        name: Default.DOC_TRANSLATE,
-        description: "Translate document with terminology consistency",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_TRANSLATE
-        },
-        hints: hints(PROMPT_DOC_TRANSLATE),
-      },
-      [Default.DOC_REDACTION_PLAN]: {
-        name: Default.DOC_REDACTION_PLAN,
-        description: "Plan redaction before external release",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_REDACTION_PLAN
-        },
-        hints: hints(PROMPT_DOC_REDACTION_PLAN),
-      },
-      [Default.DOC_CONVERT]: {
-        name: Default.DOC_CONVERT,
-        description: "Convert document formats (pandoc)",
-        agent: "doc",
-        get template() {
-          return PROMPT_DOC_CONVERT
-        },
-        hints: hints(PROMPT_DOC_CONVERT),
       },
       [Default.NOVEL_INIT]: {
         name: Default.NOVEL_INIT,
@@ -308,6 +222,14 @@ export namespace Command {
           return PROMPT_SKILL_INSTALL
         },
         hints: hints(PROMPT_SKILL_INSTALL),
+      },
+      [Default.SKILL_INIT]: {
+        name: Default.SKILL_INIT,
+        description: "Install default skills if missing",
+        get template() {
+          return PROMPT_SKILL_INIT
+        },
+        hints: hints(PROMPT_SKILL_INIT),
       },
       [Default.SKILL_UPDATE]: {
         name: Default.SKILL_UPDATE,

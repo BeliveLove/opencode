@@ -1,0 +1,30 @@
+Install default skills by checking local skill folders and invoking /skill-install only for missing skills.
+Do NOT run any opencode CLI commands.
+
+Inputs from $ARGUMENTS can include:
+--scope, --path, --force.
+
+Resolve skill root:
+- If --path is provided, use it; if it does not end with "skill" or "skills", append "skill".
+- Else if scope=project, use <project root>/.opencode/skill.
+- Else global: use $XDG_CONFIG_HOME/opencode/skill or ~/.config/opencode/skill (Windows: %APPDATA%\\opencode\\skill).
+
+Default skill sources (name -> url):
+- docx -> https://github.com/ComposioHQ/awesome-claude-skills/tree/master/document-skills/docx
+- pdf -> https://github.com/ComposioHQ/awesome-claude-skills/tree/master/document-skills/pdf
+- pptx -> https://github.com/ComposioHQ/awesome-claude-skills/tree/master/document-skills/pptx
+- xlsx -> https://github.com/ComposioHQ/awesome-claude-skills/tree/master/document-skills/xlsx
+- json-canvas -> https://github.com/kepano/obsidian-skills/tree/main/skills/json-canvas
+- obsidian-bases -> https://github.com/kepano/obsidian-skills/tree/main/skills/obsidian-bases
+- obsidian-markdown -> https://github.com/kepano/obsidian-skills/tree/main/skills/obsidian-markdown
+
+Steps:
+1) Determine target skill root using the rules above.
+2) For each default skill name, check if <skillRoot>/<name>/SKILL.md exists.
+3) For each missing skill (or all skills if --force is set), run /skill-install with --url <url> and pass through --scope/--path/--force as provided.
+4) Summarize installed vs already present.
+
+Rules:
+- Do not reinstall existing skills unless --force was explicitly provided.
+- Keep the user's scope/path choice; do not mix scopes.
+- If any install fails, report the error and continue with the rest.
