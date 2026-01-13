@@ -41,6 +41,7 @@
         "@solidjs/router": "catalog:",
         "@thisbeyond/solid-dnd": "0.7.5",
         "diff": "catalog:",
+        "dompurify": "catalog:",
         "fuzzysort": "catalog:",
         "ghostty-web": "0.3.0",
         "luxon": "catalog:",
