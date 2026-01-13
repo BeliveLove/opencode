@@ -467,6 +467,7 @@ test("Truncate.DIR is allowed even when user denies external_directory globally"
     fn: async () => {
       const build = await Agent.get("build")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, build!.permission).action).toBe("allow")
+      expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, build!.permission).action).toBe("allow")
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", build!.permission).action).toBe("deny")
     },
   })
@@ -490,6 +491,7 @@ test("Truncate.DIR is allowed even when user denies external_directory per-agent
     fn: async () => {
       const build = await Agent.get("build")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, build!.permission).action).toBe("allow")
+      expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, build!.permission).action).toBe("allow")
       expect(PermissionNext.evaluate("external_directory", "/some/other/path", build!.permission).action).toBe("deny")
     },
   })
@@ -512,6 +514,7 @@ test("explicit Truncate.DIR deny is respected", async () => {
     fn: async () => {
       const build = await Agent.get("build")
       expect(PermissionNext.evaluate("external_directory", Truncate.DIR, build!.permission).action).toBe("deny")
+      expect(PermissionNext.evaluate("external_directory", Truncate.GLOB, build!.permission).action).toBe("deny")
     },
   })
 })
