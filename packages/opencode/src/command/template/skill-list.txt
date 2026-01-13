@@ -1,5 +1,10 @@
-List available skills using the CLI command below.
+List available skills by scanning the skill folders directly.
+Do NOT run any opencode CLI commands.
 
-!`opencode skill list $ARGUMENTS`
+Resolve skill root(s):
+- If --path is provided, use it; if it does not end with "skill" or "skills", append "skill".
+- Else if scope=project, use <project root>/.opencode/skill.
+- Else global: use $XDG_CONFIG_HOME/opencode/skill or ~/.config/opencode/skill (Windows: %APPDATA%\\opencode\\skill).
 
-Summarize the available skills and note whether they are builtin or file-based.
+Find all SKILL.md files under the resolved root(s), read frontmatter, and list each skill name + description + path.
+If none are found, say so.

@@ -1,7 +1,23 @@
-Create a new skill using the CLI command below.
-Note: the CLI requires --description when not running interactively.
+Create a new skill by writing SKILL.md directly to the opencode skill folder.
+Do NOT run any opencode CLI commands.
 
-!`opencode skill create $ARGUMENTS`
+Parse $ARGUMENTS:
+- name (required): lowercase letters, numbers, hyphens
+- --description (required when non-interactive)
+- --scope [global|project] (default: global)
+- --path <config root> (optional)
+- --force (optional)
 
-If creation failed due to missing description, ask the user to re-run with:
---description "..."
+Resolve skill root:
+- If --path is provided, use it; if it does not end with "skill" or "skills", append "skill".
+- Else if scope=project, use <project root>/.opencode/skill.
+- Else global: use $XDG_CONFIG_HOME/opencode/skill or ~/.config/opencode/skill (Windows: %APPDATA%\\opencode\\skill).
+
+Create <skillRoot>/<name>/SKILL.md with YAML frontmatter (name, description) and a minimal body:
+## What I do
+-
+## When to use me
+-
+
+If the file exists and --force is not set, ask the user to confirm or re-run with --force.
+After writing, report the full path.

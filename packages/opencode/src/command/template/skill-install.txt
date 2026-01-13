@@ -1,8 +1,27 @@
-Install skill(s) using the CLI command below.
-If no arguments were provided or the command fails, explain the error and ask for the missing inputs.
+Install skill(s) by fetching or copying SKILL.md into the opencode skill folder.
+Do NOT run any opencode CLI commands. If inputs are missing, ask for them.
 
-!`opencode skill install $ARGUMENTS`
+Inputs from $ARGUMENTS can include positional sources plus:
+--npm, --python, --url, --subpath, --scope, --path, --force.
 
-After running, summarize what was installed and where.
-Default global location is ~/.config/opencode/skill/<name>/SKILL.md.
+Resolve skill root:
+- If --path is provided, use it; if it does not end with "skill" or "skills", append "skill".
+- Else if scope=project, use <project root>/.opencode/skill.
+- Else global: use $XDG_CONFIG_HOME/opencode/skill or ~/.config/opencode/skill (Windows: %APPDATA%\\opencode\\skill).
+
+For each source:
+- npm:/pypi:/python: download package tarball, extract, then find SKILL.md (use --subpath or search).
+- http(s):// or git+http(s)://:
+  - If GitHub/GitLab/Gitee repo or tree/blob URL, download the repo tarball for the ref (default branch if none), extract, then find SKILL.md (use --subpath or search).
+  - If archive (.zip/.tar/.tar.gz/.tgz), download and extract, then find SKILL.md.
+  - Otherwise treat as a direct SKILL.md URL and download the text.
+- Local path:
+  - If SKILL.md, use it.
+  - If archive, extract and search.
+  - If directory, search for SKILL.md.
+
+For every SKILL.md found: parse frontmatter (name, description), then write to <skillRoot>/<name>/SKILL.md.
+Respect --force when overwriting existing skills.
+
+Summarize what was installed and where.
 If this is the TUI, remind the user to restart OpenCode if the skill list does not refresh.

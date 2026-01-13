@@ -279,7 +279,7 @@ export namespace Command {
       },
       [Default.SKILL_CREATE]: {
         name: Default.SKILL_CREATE,
-        description: "Create a new skill (CLI wrapper)",
+        description: "Create a new skill (file-based)",
         get template() {
           return PROMPT_SKILL_CREATE
         },
@@ -287,7 +287,7 @@ export namespace Command {
       },
       [Default.SKILL_LIST]: {
         name: Default.SKILL_LIST,
-        description: "List available skills (CLI wrapper)",
+        description: "List available skills (file-based)",
         get template() {
           return PROMPT_SKILL_LIST
         },
@@ -295,7 +295,7 @@ export namespace Command {
       },
       [Default.SKILL_SHOW]: {
         name: Default.SKILL_SHOW,
-        description: "Show a skill's content (CLI wrapper)",
+        description: "Show a skill's content (file-based)",
         get template() {
           return PROMPT_SKILL_SHOW
         },
@@ -303,7 +303,7 @@ export namespace Command {
       },
       [Default.SKILL_INSTALL]: {
         name: Default.SKILL_INSTALL,
-        description: "Install skills from npm/pypi/url (CLI wrapper)",
+        description: "Install skills from npm/pypi/url (file-based)",
         get template() {
           return PROMPT_SKILL_INSTALL
         },
@@ -311,7 +311,7 @@ export namespace Command {
       },
       [Default.SKILL_UPDATE]: {
         name: Default.SKILL_UPDATE,
-        description: "Update skills from npm/pypi/url (CLI wrapper)",
+        description: "Update skills from npm/pypi/url (file-based)",
         get template() {
           return PROMPT_SKILL_UPDATE
         },
@@ -319,7 +319,7 @@ export namespace Command {
       },
       [Default.SKILL_DELETE]: {
         name: Default.SKILL_DELETE,
-        description: "Delete a skill (CLI wrapper)",
+        description: "Delete a skill (file-based)",
         get template() {
           return PROMPT_SKILL_DELETE
         },

@@ -1,6 +1,10 @@
-Delete a skill using the CLI command below.
-If the skill is not found, ask for the correct name or scope.
+Delete a skill by removing its folder from disk.
+Do NOT run any opencode CLI commands.
 
-!`opencode skill delete $ARGUMENTS`
+Resolve skill root:
+- If --path is provided, use it; if it does not end with "skill" or "skills", append "skill".
+- Else if scope=project, use <project root>/.opencode/skill.
+- Else global: use $XDG_CONFIG_HOME/opencode/skill or ~/.config/opencode/skill (Windows: %APPDATA%\\opencode\\skill).
 
+Remove <skillRoot>/<name>. If the skill is not found, ask for the correct name or scope.
 Confirm deletion and mention the removed path.
