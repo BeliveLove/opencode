@@ -46,6 +46,7 @@ import { Flag } from "@/flag/flag"
 import { Log } from "@/util/log"
 import { LspTool } from "./lsp"
 import { Truncate } from "./truncation"
+import { PlanExitTool, PlanEnterTool } from "./plan"
 
 export namespace ToolRegistry {
   const log = Log.create({ service: "tool.registry" })
@@ -114,7 +115,7 @@ export namespace ToolRegistry {
 
     const tools: Tool.Info[] = [
       InvalidTool,
-      ...(Flag.OPENCODE_CLIENT === "cli" ? [QuestionTool] : []),
+      ...(["app", "cli", "desktop"].includes(Flag.OPENCODE_CLIENT) ? [QuestionTool] : []),
       BashTool,
       ReadTool,
       GlobTool,
@@ -151,6 +152,7 @@ export namespace ToolRegistry {
       NovelGraphRelationsTool,
       ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [LspTool] : []),
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
+      ...(Flag.OPENCODE_EXPERIMENTAL_PLAN_MODE && Flag.OPENCODE_CLIENT === "cli" ? [PlanExitTool, PlanEnterTool] : []),
       ...custom,
     ]
 
