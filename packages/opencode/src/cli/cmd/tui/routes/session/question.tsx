@@ -285,7 +285,7 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
               backgroundColor={confirm() ? theme.accent : theme.backgroundElement}
               onMouseUp={() => selectTab(questions().length)}
             >
-              <text fg={confirm() ? theme.selectedListItemText : theme.textMuted}>Confirm</text>
+              <text fg={confirm() ? theme.selectedListItemText : theme.textMuted}>确认</text>
             </box>
           </box>
         </Show>
@@ -295,7 +295,7 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
             <box>
               <text fg={theme.text}>
                 {question()?.question}
-                {multi() ? " (select all that apply)" : ""}
+                {multi() ? "（可多选）" : ""}
               </text>
             </box>
             <box>
@@ -338,7 +338,7 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
                     </box>
                     <box backgroundColor={other() ? theme.backgroundElement : undefined}>
                       <text fg={other() ? theme.secondary : customPicked() ? theme.success : theme.text}>
-                        {multi() ? `[${customPicked() ? "✓" : " "}] Type your own answer` : "Type your own answer"}
+                        {multi() ? `[${customPicked() ? "✓" : " "}] 自定义答案` : "自定义答案"}
                       </text>
                     </box>
 
@@ -357,7 +357,7 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
                           })
                         }}
                         initialValue={input()}
-                        placeholder="Type your own answer"
+                        placeholder="自定义答案"
                         textColor={theme.text}
                         focusedTextColor={theme.text}
                         cursorColor={theme.primary}
@@ -378,7 +378,7 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
 
         <Show when={confirm() && !single()}>
           <box paddingLeft={1}>
-            <text fg={theme.text}>Review</text>
+            <text fg={theme.text}>回顾</text>
           </box>
           <For each={questions()}>
             {(q, index) => {
@@ -389,7 +389,7 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
                   <text>
                     <span style={{ fg: theme.textMuted }}>{q.header}:</span>{" "}
                     <span style={{ fg: answered() ? theme.text : theme.error }}>
-                      {answered() ? value() : "(not answered)"}
+                      {answered() ? value() : "（未回答）"}
                     </span>
                   </text>
                 </box>
@@ -410,23 +410,23 @@ export function QuestionPrompt(props: { request: QuestionRequest }) {
         <box flexDirection="row" gap={2}>
           <Show when={!single()}>
             <text fg={theme.text}>
-              {"⇆"} <span style={{ fg: theme.textMuted }}>tab</span>
+              {"⇆"} <span style={{ fg: theme.textMuted }}>Tab</span>
             </text>
           </Show>
           <Show when={!confirm()}>
             <text fg={theme.text}>
-              {"↑↓"} <span style={{ fg: theme.textMuted }}>select</span>
+              {"↑↓"} <span style={{ fg: theme.textMuted }}>选择</span>
             </text>
           </Show>
           <text fg={theme.text}>
             enter{" "}
             <span style={{ fg: theme.textMuted }}>
-              {confirm() ? "submit" : multi() ? "toggle" : single() ? "submit" : "confirm"}
+              {confirm() ? "提交" : multi() ? "切换" : single() ? "提交" : "确认"}
             </span>
           </text>
 
           <text fg={theme.text}>
-            esc <span style={{ fg: theme.textMuted }}>dismiss</span>
+            esc <span style={{ fg: theme.textMuted }}>关闭</span>
           </text>
         </box>
       </box>

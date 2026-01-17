@@ -338,7 +338,7 @@ export function Autocomplete(props: {
     const s = session()
     for (const command of sync.data.command) {
       results.push({
-        display: "/" + command.name + (command.mcp ? " (MCP)" : ""),
+        display: "/" + command.name + (command.mcp ? "（MCP）" : ""),
         description: command.description,
         onSelect: () => {
           const newText = "/" + command.name + " "
@@ -353,56 +353,56 @@ export function Autocomplete(props: {
       results.push(
         {
           display: "/undo",
-          description: "undo the last message",
+          description: "撤销上一条消息",
           onSelect: () => {
             command.trigger("session.undo")
           },
         },
         {
           display: "/redo",
-          description: "redo the last message",
+          description: "重做上一条消息",
           onSelect: () => command.trigger("session.redo"),
         },
         {
           display: "/compact",
           aliases: ["/summarize"],
-          description: "compact the session",
+          description: "压缩会话",
           onSelect: () => command.trigger("session.compact"),
         },
         {
           display: "/unshare",
           disabled: !s.share,
-          description: "unshare a session",
+          description: "取消分享会话",
           onSelect: () => command.trigger("session.unshare"),
         },
         {
           display: "/rename",
-          description: "rename session",
+          description: "重命名会话",
           onSelect: () => command.trigger("session.rename"),
         },
         {
           display: "/copy",
-          description: "copy session transcript to clipboard",
+          description: "复制会话记录到剪贴板",
           onSelect: () => command.trigger("session.copy"),
         },
         {
           display: "/export",
-          description: "export session transcript to file",
+          description: "导出会话记录到文件",
           onSelect: () => command.trigger("session.export"),
         },
         {
           display: "/timeline",
-          description: "jump to message",
+          description: "跳转到消息",
           onSelect: () => command.trigger("session.timeline"),
         },
         {
           display: "/fork",
-          description: "fork from message",
+          description: "从消息派生",
           onSelect: () => command.trigger("session.fork"),
         },
         {
           display: "/thinking",
-          description: "toggle thinking visibility",
+          description: "切换思考可见性",
           onSelect: () => command.trigger("session.toggle.thinking"),
         },
       )
@@ -410,7 +410,7 @@ export function Autocomplete(props: {
         results.push({
           display: "/share",
           disabled: !!s.share?.url,
-          description: "share a session",
+          description: "分享会话",
           onSelect: () => command.trigger("session.share"),
         })
       }
@@ -420,64 +420,64 @@ export function Autocomplete(props: {
       {
         display: "/new",
         aliases: ["/clear"],
-        description: "create a new session",
+        description: "新建会话",
         onSelect: () => command.trigger("session.new"),
       },
       {
         display: "/models",
-        description: "list models",
+        description: "列出模型",
         onSelect: () => command.trigger("model.list"),
       },
       {
         display: "/agents",
-        description: "list agents",
+        description: "列出智能体",
         onSelect: () => command.trigger("agent.list"),
       },
       {
         display: "/session",
         aliases: ["/resume", "/continue"],
-        description: "list sessions",
+        description: "列出会话",
         onSelect: () => command.trigger("session.list"),
       },
       {
         display: "/status",
-        description: "show status",
+        description: "查看状态",
         onSelect: () => command.trigger("opencode.status"),
       },
       {
         display: "/mcp",
-        description: "toggle MCPs",
+        description: "切换 MCP",
         onSelect: () => command.trigger("mcp.list"),
       },
       {
         display: "/theme",
-        description: "toggle theme",
+        description: "切换主题",
         onSelect: () => command.trigger("theme.switch"),
       },
       {
         display: "/editor",
-        description: "open editor",
+        description: "打开编辑器",
         onSelect: () => command.trigger("prompt.editor", "prompt"),
       },
       {
         display: "/connect",
-        description: "connect to a provider",
+        description: "连接提供商",
         onSelect: () => command.trigger("provider.connect"),
       },
       {
         display: "/help",
-        description: "show help",
+        description: "显示帮助",
         onSelect: () => command.trigger("help.show"),
       },
       {
         display: "/commands",
-        description: "show all commands",
+        description: "显示全部命令",
         onSelect: () => command.show(),
       },
       {
         display: "/exit",
         aliases: ["/quit", "/q"],
-        description: "exit the app",
+        description: "退出应用",
         onSelect: () => command.trigger("app.exit"),
       },
     )
@@ -733,7 +733,7 @@ export function Autocomplete(props: {
           each={options()}
           fallback={
             <box paddingLeft={1} paddingRight={1}>
-              <text fg={theme.textMuted}>No matching items</text>
+              <text fg={theme.textMuted}>无匹配项</text>
             </box>
           }
         >

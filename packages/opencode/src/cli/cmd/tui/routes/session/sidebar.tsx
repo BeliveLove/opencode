@@ -91,11 +91,11 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
             </box>
             <box>
               <text fg={theme.text}>
-                <b>Context</b>
+                <b>上下文</b>
               </text>
-              <text fg={theme.textMuted}>{context()?.tokens ?? 0} tokens</text>
-              <text fg={theme.textMuted}>{context()?.percentage ?? 0}% used</text>
-              <text fg={theme.textMuted}>{cost()} spent</text>
+              <text fg={theme.textMuted}>{context()?.tokens ?? 0} 个词元</text>
+              <text fg={theme.textMuted}>{context()?.percentage ?? 0}% 已用</text>
+              <text fg={theme.textMuted}>已花费 {cost()}</text>
             </box>
             <Show when={mcpEntries().length > 0}>
               <box>
@@ -112,8 +112,8 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
                     <Show when={!expanded.mcp}>
                       <span style={{ fg: theme.textMuted }}>
                         {" "}
-                        ({connectedMcpCount()} active
-                        {errorMcpCount() > 0 ? `, ${errorMcpCount()} error${errorMcpCount() > 1 ? "s" : ""}` : ""})
+                        ({connectedMcpCount()} 已连接
+                        {errorMcpCount() > 0 ? `，${errorMcpCount()} 个错误` : ""})
                       </span>
                     </Show>
                   </text>
@@ -142,12 +142,12 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
                           {key}{" "}
                           <span style={{ fg: theme.textMuted }}>
                             <Switch fallback={item.status}>
-                              <Match when={item.status === "connected"}>Connected</Match>
+                              <Match when={item.status === "connected"}>已连接</Match>
                               <Match when={item.status === "failed" && item}>{(val) => <i>{val().error}</i>}</Match>
-                              <Match when={item.status === "disabled"}>Disabled</Match>
-                              <Match when={(item.status as string) === "needs_auth"}>Needs auth</Match>
+                              <Match when={item.status === "disabled"}>已禁用</Match>
+                              <Match when={(item.status as string) === "needs_auth"}>需要认证</Match>
                               <Match when={(item.status as string) === "needs_client_registration"}>
-                                Needs client ID
+                                需要客户端 ID
                               </Match>
                             </Switch>
                           </span>
@@ -175,8 +175,8 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
                 <Show when={sync.data.lsp.length === 0}>
                   <text fg={theme.textMuted}>
                     {sync.data.config.lsp === false
-                      ? "LSPs have been disabled in settings"
-                      : "LSPs will activate as files are read"}
+                      ? "设置中已禁用 LSP"
+                      : "读取文件时将自动启用 LSP"}
                   </text>
                 </Show>
                 <For each={sync.data.lsp}>
@@ -212,7 +212,7 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
                     <text fg={theme.text}>{expanded.todo ? "▼" : "▶"}</text>
                   </Show>
                   <text fg={theme.text}>
-                    <b>Todo</b>
+                    <b>待办</b>
                   </text>
                 </box>
                 <Show when={todo().length <= 2 || expanded.todo}>
@@ -231,7 +231,7 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
                     <text fg={theme.text}>{expanded.diff ? "▼" : "▶"}</text>
                   </Show>
                   <text fg={theme.text}>
-                    <b>Modified Files</b>
+                    <b>已修改文件</b>
                   </text>
                 </box>
                 <Show when={diff().length <= 2 || expanded.diff}>
@@ -277,18 +277,18 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
               <box flexGrow={1} gap={1}>
                 <box flexDirection="row" justifyContent="space-between">
                   <text fg={theme.text}>
-                    <b>Getting started</b>
+                    <b>开始使用</b>
                   </text>
                   <text fg={theme.textMuted} onMouseDown={() => kv.set("dismissed_getting_started", true)}>
                     ✕
                   </text>
                 </box>
-                <text fg={theme.textMuted}>OpenCode includes free models so you can start immediately.</text>
+                <text fg={theme.textMuted}>OpenCode 提供免费模型，可立即开始使用。</text>
                 <text fg={theme.textMuted}>
-                  Connect from 75+ providers to use other models, including Claude, GPT, Gemini etc
+                  连接 75+ 提供商以使用其他模型，包括 Claude、GPT、Gemini 等
                 </text>
                 <box flexDirection="row" gap={1} justifyContent="space-between">
-                  <text fg={theme.text}>Connect provider</text>
+                  <text fg={theme.text}>连接提供商</text>
                   <text fg={theme.textMuted}>/connect</text>
                 </box>
               </box>

@@ -32,7 +32,7 @@ function init() {
     return [
       ...suggested.map((x) => ({
         ...x,
-        category: "Suggested",
+        category: "推荐",
         value: "suggested." + x.value,
       })),
       ...all,
@@ -88,7 +88,7 @@ function init() {
 export function useCommandDialog() {
   const value = useContext(ctx)
   if (!value) {
-    throw new Error("useCommandDialog must be used within a CommandProvider")
+    throw new Error("useCommandDialog 必须在 CommandProvider 内使用")
   }
   return value
 }
@@ -117,7 +117,7 @@ function DialogCommand(props: { options: CommandOption[] }) {
   return (
     <DialogSelect
       ref={(r) => (ref = r)}
-      title="Commands"
+      title="命令"
       options={props.options.filter((x) => !ref?.filter || !x.value.startsWith("suggested."))}
     />
   )

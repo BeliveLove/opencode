@@ -1,4 +1,4 @@
-import { createMemo, createSignal } from "solid-js"
+﻿import { createMemo, createSignal } from "solid-js"
 import { useLocal } from "@tui/context/local"
 import { useSync } from "@tui/context/sync"
 import { map, pipe, entries, sortBy } from "remeda"
@@ -11,12 +11,12 @@ import { useSDK } from "@tui/context/sdk"
 function Status(props: { enabled: boolean; loading: boolean }) {
   const { theme } = useTheme()
   if (props.loading) {
-    return <span style={{ fg: theme.textMuted }}>⋯ Loading</span>
+    return <span style={{ fg: theme.textMuted }}>⋯ 加载中</span>
   }
   if (props.enabled) {
-    return <span style={{ fg: theme.success, attributes: TextAttributes.BOLD }}>✓ Enabled</span>
+    return <span style={{ fg: theme.success, attributes: TextAttributes.BOLD }}>✓ 已启用</span>
   }
-  return <span style={{ fg: theme.textMuted }}>○ Disabled</span>
+  return <span style={{ fg: theme.textMuted }}>○ 已禁用</span>
 }
 
 export function DialogMcp() {
@@ -35,20 +35,29 @@ export function DialogMcp() {
       mcpData ?? {},
       entries(),
       sortBy(([name]) => name),
-      map(([name, status]) => ({
-        value: name,
-        title: name,
-        description: status.status === "failed" ? "failed" : status.status,
-        footer: <Status enabled={local.mcp.isEnabled(name)} loading={loadingMcp === name} />,
-        category: undefined,
-      })),
+      map(([name, status]) => {
+        const statusLabel: Record<string, string> = {
+          connected: "已连接",
+          failed: "失败",
+          disabled: "已禁用",
+          needs_auth: "需要认证",
+          needs_client_registration: "需要注册客户端",
+        }
+        return {
+          value: name,
+          title: name,
+          description: statusLabel[status.status] ?? status.status,
+          footer: <Status enabled={local.mcp.isEnabled(name)} loading={loadingMcp === name} />,
+          category: undefined,
+        }
+      }),
     )
   })
 
   const keybinds = createMemo(() => [
     {
       keybind: Keybind.parse("space")[0],
-      title: "toggle",
+      title: "切换",
       onTrigger: async (option: DialogSelectOption<string>) => {
         // Prevent toggling while an operation is already in progress
         if (loading() !== null) return
@@ -75,7 +84,7 @@ export function DialogMcp() {
   return (
     <DialogSelect
       ref={setRef}
-      title="MCPs"
+      title="MCP 列表"
       options={options()}
       keybind={keybinds()}
       onSelect={(option) => {

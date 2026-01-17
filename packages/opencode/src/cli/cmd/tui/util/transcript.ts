@@ -1,5 +1,5 @@
 import type { AssistantMessage, Part, UserMessage } from "@opencode-ai/sdk/v2"
-import { Locale } from "@/util/locale"
+import { displayAgentName } from "./agent"
 
 export type TranscriptOptions = {
   thinking: boolean
@@ -27,9 +27,9 @@ export function formatTranscript(
   options: TranscriptOptions,
 ): string {
   let transcript = `# ${session.title}\n\n`
-  transcript += `**Session ID:** ${session.id}\n`
-  transcript += `**Created:** ${new Date(session.time.created).toLocaleString()}\n`
-  transcript += `**Updated:** ${new Date(session.time.updated).toLocaleString()}\n\n`
+  transcript += `**会话 ID：** ${session.id}\n`
+  transcript += `**创建时间：** ${new Date(session.time.created).toLocaleString()}\n`
+  transcript += `**更新时间：** ${new Date(session.time.updated).toLocaleString()}\n\n`
   transcript += `---\n\n`
 
   for (const msg of messages) {
@@ -44,7 +44,7 @@ export function formatMessage(msg: UserMessage | AssistantMessage, parts: Part[]
   let result = ""
 
   if (msg.role === "user") {
-    result += `## User\n\n`
+    result += `## 用户\n\n`
   } else {
     result += formatAssistantHeader(msg, options.assistantMetadata)
   }
@@ -58,13 +58,14 @@ export function formatMessage(msg: UserMessage | AssistantMessage, parts: Part[]
 
 export function formatAssistantHeader(msg: AssistantMessage, includeMetadata: boolean): string {
   if (!includeMetadata) {
-    return `## Assistant\n\n`
+    return `## 助手\n\n`
   }
 
   const duration =
     msg.time.completed && msg.time.created ? ((msg.time.completed - msg.time.created) / 1000).toFixed(1) + "s" : ""
 
-  return `## Assistant (${Locale.titlecase(msg.agent)} · ${msg.modelID}${duration ? ` · ${duration}` : ""})\n\n`
+  const durationLabel = duration ? ` | 用时 ${duration}` : ""
+  return `## 助手（${displayAgentName(msg.agent)} | ${msg.modelID}${durationLabel}）\n\n`
 }
 
 export function formatPart(part: Part, options: TranscriptOptions): string {
@@ -74,21 +75,21 @@ export function formatPart(part: Part, options: TranscriptOptions): string {
 
   if (part.type === "reasoning") {
     if (options.thinking) {
-      return `_Thinking:_\n\n${part.text}\n\n`
+      return `_思考：_\n\n${part.text}\n\n`
     }
     return ""
   }
 
   if (part.type === "tool") {
-    let result = `\`\`\`\nTool: ${part.tool}\n`
+    let result = `\`\`\`\n工具： ${part.tool}\n`
     if (options.toolDetails && part.state.input) {
-      result += `\n**Input:**\n\`\`\`json\n${JSON.stringify(part.state.input, null, 2)}\n\`\`\``
+      result += `\n**输入：**\n\`\`\`json\n${JSON.stringify(part.state.input, null, 2)}\n\`\`\``
     }
     if (options.toolDetails && part.state.status === "completed" && part.state.output) {
-      result += `\n**Output:**\n\`\`\`\n${part.state.output}\n\`\`\``
+      result += `\n**输出：**\n\`\`\`\n${part.state.output}\n\`\`\``
     }
     if (options.toolDetails && part.state.status === "error" && part.state.error) {
-      result += `\n**Error:**\n\`\`\`\n${part.state.error}\n\`\`\``
+      result += `\n**错误：**\n\`\`\`\n${part.state.error}\n\`\`\``
     }
     result += `\n\`\`\`\n\n`
     return result

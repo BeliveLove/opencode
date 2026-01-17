@@ -56,14 +56,13 @@ export function Footer() {
         <Switch>
           <Match when={store.welcome}>
             <text fg={theme.text}>
-              Get started <span style={{ fg: theme.textMuted }}>/connect</span>
+              开始使用 <span style={{ fg: theme.textMuted }}>/connect</span>
             </text>
           </Match>
           <Match when={connected()}>
             <Show when={permissions().length > 0}>
               <text fg={theme.warning}>
-                <span style={{ fg: theme.warning }}>△</span> {permissions().length} Permission
-                {permissions().length > 1 ? "s" : ""}
+                <span style={{ fg: theme.warning }}>△</span> {permissions().length} 项权限
               </text>
             </Show>
             <text fg={theme.text}>
@@ -79,7 +78,7 @@ export function Footer() {
                     <span style={{ fg: theme.success }}>⊙ </span>
                   </Match>
                 </Switch>
-                {mcp()} MCP
+                {mcp()} 个 MCP
               </text>
             </Show>
             <text fg={theme.textMuted}>/status</text>

@@ -171,7 +171,7 @@ export function tui(input: {
           keyBindings: [{ name: "y", ctrl: true, action: "copy-selection" }],
           onCopySelection: (text) => {
             Clipboard.copy(text).catch((error) => {
-              console.error(`Failed to copy console selection to clipboard: ${error}`)
+              console.error(`复制控制台选区到剪贴板失败：${error}`)
             })
           },
         },
@@ -206,7 +206,7 @@ function App() {
     // @ts-expect-error writeOut is not in type definitions
     renderer.writeOut(finalOsc52)
     await Clipboard.copy(text)
-      .then(() => toast.show({ message: "Copied to clipboard", variant: "info" }))
+      .then(() => toast.show({ message: "已复制到剪贴板", variant: "info" }))
       .catch(toast.error)
     renderer.clearSelection()
   }
@@ -247,7 +247,7 @@ function App() {
         if (!providerID || !modelID)
           return toast.show({
             variant: "warning",
-            message: `Invalid model format: ${args.model}`,
+            message: `模型格式无效：${args.model}`,
             duration: 3000,
           })
         local.model.set({ providerID, modelID }, { recent: true })
@@ -288,21 +288,21 @@ function App() {
   const connected = useConnected()
   command.register(() => [
     {
-      title: "Switch session",
+      title: "切换会话",
       value: "session.list",
       keybind: "session_list",
-      category: "Session",
+      category: "会话",
       suggested: sync.data.session.length > 0,
       onSelect: () => {
         dialog.replace(() => <DialogSessionList />)
       },
     },
     {
-      title: "New session",
+      title: "新建会话",
       suggested: route.data.type === "session",
       value: "session.new",
       keybind: "session_new",
-      category: "Session",
+      category: "会话",
       onSelect: () => {
         const current = promptRef.current
         // Don't require focus - if there's any text, preserve it
@@ -315,170 +315,170 @@ function App() {
       },
     },
     {
-      title: "Switch model",
+      title: "切换模型",
       value: "model.list",
       keybind: "model_list",
       suggested: true,
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         dialog.replace(() => <DialogModel />)
       },
     },
     {
-      title: "Model cycle",
+      title: "模型轮换",
       disabled: true,
       value: "model.cycle_recent",
       keybind: "model_cycle_recent",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         local.model.cycle(1)
       },
     },
     {
-      title: "Model cycle reverse",
+      title: "模型反向轮换",
       disabled: true,
       value: "model.cycle_recent_reverse",
       keybind: "model_cycle_recent_reverse",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         local.model.cycle(-1)
       },
     },
     {
-      title: "Favorite cycle",
+      title: "收藏轮换",
       value: "model.cycle_favorite",
       keybind: "model_cycle_favorite",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         local.model.cycleFavorite(1)
       },
     },
     {
-      title: "Favorite cycle reverse",
+      title: "收藏反向轮换",
       value: "model.cycle_favorite_reverse",
       keybind: "model_cycle_favorite_reverse",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         local.model.cycleFavorite(-1)
       },
     },
     {
-      title: "Switch agent",
+      title: "切换智能体",
       value: "agent.list",
       keybind: "agent_list",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         dialog.replace(() => <DialogAgent />)
       },
     },
     {
-      title: "Toggle MCPs",
+      title: "切换 MCP",
       value: "mcp.list",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         dialog.replace(() => <DialogMcp />)
       },
     },
     {
-      title: "Agent cycle",
+      title: "智能体轮换",
       value: "agent.cycle",
       keybind: "agent_cycle",
-      category: "Agent",
+      category: "智能体",
       disabled: true,
       onSelect: () => {
         local.agent.move(1)
       },
     },
     {
-      title: "Variant cycle",
+      title: "变体轮换",
       value: "variant.cycle",
       keybind: "variant_cycle",
-      category: "Agent",
+      category: "智能体",
       onSelect: () => {
         local.model.variant.cycle()
       },
     },
     {
-      title: "Agent cycle reverse",
+      title: "智能体反向轮换",
       value: "agent.cycle.reverse",
       keybind: "agent_cycle_reverse",
-      category: "Agent",
+      category: "智能体",
       disabled: true,
       onSelect: () => {
         local.agent.move(-1)
       },
     },
     {
-      title: "Connect provider",
+      title: "连接提供商",
       value: "provider.connect",
       suggested: !connected(),
       onSelect: () => {
         dialog.replace(() => <DialogProviderList />)
       },
-      category: "Provider",
+      category: "提供商",
     },
     {
-      title: "View status",
+      title: "查看状态",
       keybind: "status_view",
       value: "opencode.status",
       onSelect: () => {
         dialog.replace(() => <DialogStatus />)
       },
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Switch theme",
+      title: "切换主题",
       value: "theme.switch",
       keybind: "theme_list",
       onSelect: () => {
         dialog.replace(() => <DialogThemeList />)
       },
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Toggle appearance",
+      title: "切换外观",
       value: "theme.switch_mode",
       onSelect: (dialog) => {
         setMode(mode() === "dark" ? "light" : "dark")
         dialog.clear()
       },
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Help",
+      title: "帮助",
       value: "help.show",
       onSelect: () => {
         dialog.replace(() => <DialogHelp />)
       },
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Open docs",
+      title: "打开文档",
       value: "docs.open",
       onSelect: () => {
         open("https://opencode.ai/docs").catch(() => {})
         dialog.clear()
       },
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Open WebUI",
+      title: "打开 WebUI",
       value: "webui.open",
       onSelect: () => {
         open(sdk.url).catch(() => {})
         dialog.clear()
       },
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Exit the app",
+      title: "退出应用",
       value: "app.exit",
       onSelect: () => exit(),
-      category: "System",
+      category: "系统",
     },
     {
-      title: "Toggle debug panel",
-      category: "System",
+      title: "切换调试面板",
+      category: "系统",
       value: "app.debug",
       onSelect: (dialog) => {
         renderer.toggleDebugOverlay()
@@ -486,8 +486,8 @@ function App() {
       },
     },
     {
-      title: "Toggle console",
-      category: "System",
+      title: "切换控制台",
+      category: "系统",
       value: "app.console",
       onSelect: (dialog) => {
         renderer.console.toggle()
@@ -495,24 +495,24 @@ function App() {
       },
     },
     {
-      title: "Write heap snapshot",
-      category: "System",
+      title: "写入堆快照",
+      category: "系统",
       value: "app.heap_snapshot",
       onSelect: (dialog) => {
         const path = writeHeapSnapshot()
         toast.show({
           variant: "info",
-          message: `Heap snapshot written to ${path}`,
+          message: `堆快照已写入 ${path}`,
           duration: 5000,
         })
         dialog.clear()
       },
     },
     {
-      title: "Suspend terminal",
+      title: "挂起终端",
       value: "terminal.suspend",
       keybind: "terminal_suspend",
-      category: "System",
+      category: "系统",
       onSelect: () => {
         process.once("SIGCONT", () => {
           renderer.resume()
@@ -524,10 +524,10 @@ function App() {
       },
     },
     {
-      title: terminalTitleEnabled() ? "Disable terminal title" : "Enable terminal title",
+      title: terminalTitleEnabled() ? "禁用终端标题" : "启用终端标题",
       value: "terminal.title.toggle",
       keybind: "terminal_title_toggle",
-      category: "System",
+      category: "系统",
       onSelect: (dialog) => {
         setTerminalTitleEnabled((prev) => {
           const next = !prev
@@ -547,8 +547,8 @@ function App() {
       untrack(() => {
         DialogAlert.show(
           dialog,
-          "Warning",
-          "While openrouter is a convenient way to access LLMs your request will often be routed to subpar providers that do not work well in our testing.\n\nFor reliable access to models check out OpenCode Zen\nhttps://opencode.ai/zen",
+          "警告",
+          "OpenRouter 虽然使用方便，但你的请求经常会被路由到我们测试中表现较差的提供商。\n\n如需稳定可靠的模型访问，请查看 OpenCode Zen\nhttps://opencode.ai/zen",
         ).then(() => kv.set("openrouter_warning", true))
       })
     }
@@ -579,7 +579,7 @@ function App() {
       route.navigate({ type: "home" })
       toast.show({
         variant: "info",
-        message: "The current session was deleted",
+        message: "当前会话已删除",
       })
     }
   })
@@ -588,7 +588,7 @@ function App() {
     const error = evt.properties.error
     if (error && typeof error === "object" && error.name === "MessageAbortedError") return
     const message = (() => {
-      if (!error) return "An error occurred"
+      if (!error) return "发生错误"
 
       if (typeof error === "object") {
         const data = error.data
@@ -609,8 +609,8 @@ function App() {
   sdk.event.on(Installation.Event.UpdateAvailable.type, (evt) => {
     toast.show({
       variant: "info",
-      title: "Update Available",
-      message: `OpenCode v${evt.properties.version} is available. Run 'opencode upgrade' to update manually.`,
+      title: "有可用更新",
+      message: `OpenCode v${evt.properties.version} 已可用。运行 'opencode upgrade' 手动更新。`,
       duration: 10000,
     })
   })
@@ -633,7 +633,7 @@ function App() {
           /* @ts-expect-error */
           renderer.writeOut(finalOsc52)
           await Clipboard.copy(text)
-            .then(() => toast.show({ message: "Copied to clipboard", variant: "info" }))
+            .then(() => toast.show({ message: "已复制到剪贴板", variant: "info" }))
             .catch(toast.error)
           renderer.clearSelection()
         }
@@ -707,22 +707,22 @@ function ErrorComponent(props: {
     <box flexDirection="column" gap={1} backgroundColor={colors.bg}>
       <box flexDirection="row" gap={1} alignItems="center">
         <text attributes={TextAttributes.BOLD} fg={colors.text}>
-          Please report an issue.
+          请报告一个问题。
         </text>
         <box onMouseUp={copyIssueURL} backgroundColor={colors.primary} padding={1}>
           <text attributes={TextAttributes.BOLD} fg={colors.bg}>
-            Copy issue URL (exception info pre-filled)
+            复制问题链接（已预填异常信息）
           </text>
         </box>
-        {copied() && <text fg={colors.muted}>Successfully copied</text>}
+        {copied() && <text fg={colors.muted}>复制成功</text>}
       </box>
       <box flexDirection="row" gap={2} alignItems="center">
-        <text fg={colors.text}>A fatal error occurred!</text>
+        <text fg={colors.text}>发生致命错误！</text>
         <box onMouseUp={props.reset} backgroundColor={colors.primary} padding={1}>
-          <text fg={colors.bg}>Reset TUI</text>
+          <text fg={colors.bg}>重置 TUI</text>
         </box>
         <box onMouseUp={handleExit} backgroundColor={colors.primary} padding={1}>
-          <text fg={colors.bg}>Exit</text>
+          <text fg={colors.bg}>退出</text>
         </box>
       </box>
       <scrollbox height={Math.floor(term().height * 0.7)}>

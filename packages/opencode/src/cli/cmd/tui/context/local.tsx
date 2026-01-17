@@ -60,7 +60,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           if (!agents().some((x) => x.name === name))
             return toast.show({
               variant: "warning",
-              message: `Agent not found: ${name}`,
+              message: `未找到智能体：${name}`,
               duration: 3000,
             })
           setAgentStore("current", name)
@@ -203,8 +203,8 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           const value = currentModel()
           if (!value) {
             return {
-              provider: "Connect a provider",
-              model: "No provider selected",
+              provider: "连接提供商",
+              model: "未选择提供商",
               reasoning: false,
             }
           }
@@ -234,7 +234,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           if (!favorites.length) {
             toast.show({
               variant: "info",
-              message: "Add a favorite model to use this shortcut",
+              message: "添加收藏模型以使用此快捷键",
               duration: 3000,
             })
             return
@@ -266,7 +266,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           batch(() => {
             if (!isModelValid(model)) {
               toast.show({
-                message: `Model ${model.providerID}/${model.modelID} is not valid`,
+                message: `模型 ${model.providerID}/${model.modelID} 无效`,
                 variant: "warning",
                 duration: 3000,
               })
@@ -288,7 +288,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           batch(() => {
             if (!isModelValid(model)) {
               toast.show({
-                message: `Model ${model.providerID}/${model.modelID} is not valid`,
+                message: `模型 ${model.providerID}/${model.modelID} 无效`,
                 variant: "warning",
                 duration: 3000,
               })
@@ -377,7 +377,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
         else
           toast.show({
             variant: "warning",
-            message: `Agent ${value.name}'s configured model ${value.model.providerID}/${value.model.modelID} is not valid`,
+            message: `智能体 ${value.name} 配置的模型 ${value.model.providerID}/${value.model.modelID} 无效`,
             duration: 3000,
           })
       }

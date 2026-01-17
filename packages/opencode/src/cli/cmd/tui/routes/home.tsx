@@ -44,10 +44,10 @@ export function Home() {
 
   command.register(() => [
     {
-      title: tipsHidden() ? "Show tips" : "Hide tips",
+      title: tipsHidden() ? "显示提示" : "隐藏提示",
       value: "tips.toggle",
       keybind: "tips_toggle",
-      category: "System",
+      category: "系统",
       onSelect: (dialog) => {
         kv.set("tips_hidden", !tipsHidden())
         dialog.clear()
@@ -61,12 +61,12 @@ export function Home() {
         <text fg={theme.text}>
           <Switch>
             <Match when={mcpError()}>
-              <span style={{ fg: theme.error }}>•</span> mcp errors{" "}
+              <span style={{ fg: theme.error }}>•</span> MCP 错误{" "}
               <span style={{ fg: theme.textMuted }}>ctrl+x s</span>
             </Match>
             <Match when={true}>
               <span style={{ fg: theme.success }}>•</span>{" "}
-              {Locale.pluralize(connectedMcpCount(), "{} mcp server", "{} mcp servers")}
+              {Locale.pluralize(connectedMcpCount(), "{} 个 MCP 服务器", "{} 个 MCP 服务器")}
             </Match>
           </Switch>
         </text>
@@ -125,7 +125,7 @@ export function Home() {
                   <span style={{ fg: connectedMcpCount() > 0 ? theme.success : theme.textMuted }}>⊙ </span>
                 </Match>
               </Switch>
-              {connectedMcpCount()} MCP
+              {connectedMcpCount()} 个 MCP
             </text>
             <text fg={theme.textMuted}>/status</text>
           </Show>

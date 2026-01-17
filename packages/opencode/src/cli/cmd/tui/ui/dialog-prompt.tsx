@@ -50,7 +50,7 @@ export function DialogPrompt(props: DialogPromptProps) {
           keyBindings={[{ name: "return", action: "submit" }]}
           ref={(val: TextareaRenderable) => (textarea = val)}
           initialValue={props.value}
-          placeholder={props.placeholder ?? "Enter text"}
+          placeholder={props.placeholder ?? "输入内容"}
           textColor={theme.text}
           focusedTextColor={theme.text}
           cursorColor={theme.text}
@@ -58,7 +58,7 @@ export function DialogPrompt(props: DialogPromptProps) {
       </box>
       <box paddingBottom={1} gap={1} flexDirection="row">
         <text fg={theme.text}>
-          enter <span style={{ fg: theme.textMuted }}>submit</span>
+          回车 <span style={{ fg: theme.textMuted }}>提交</span>
         </text>
       </box>
     </box>

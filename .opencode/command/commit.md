@@ -1,5 +1,5 @@
 ---
-description: git commit and push
+description: git 提交并推送
 model: opencode/glm-4.6
 subtask: true
 ---
