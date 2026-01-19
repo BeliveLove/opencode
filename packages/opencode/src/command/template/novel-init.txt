@@ -3,32 +3,58 @@
 要求：
 
 0. 小说工程根目录必须为 `novels/<novel_id>/`（多本小说），并写入 `novels/.active`。
-1. 使用 `novel.fs.write` 创建必要目录与文件（`mode=create`，避免覆盖用户已有内容），并在每次调用里传入 `novelId`。
+1. 使用 `novel_fs_write` 创建必要目录与文件（`mode=create`，避免覆盖用户已有内容），并在每次调用里传入 `novelId`。
 2. 生成的 `novels/<novel_id>/config.yml`、`novels/<novel_id>/canon/*.yml`、`novels/<novel_id>/notes/*.md` 必须包含可用默认值。
 3. 至少生成一份示例章节 `novels/<novel_id>/chapters/CH_01_001.md`，包含 YAML frontmatter 与一个示例场景标题。
 
 novel_id 规则：
 
-- 若用户参数里提供了一个 slug（例如 `my-novel`），用它作为 `<novel_id>`；否则默认用 `my-novel`。
+- 若用户参数里提供了一个 slug（例如 `my-novel`），用它作为 `<novel_id>`。
+- 若未提供，则先确定书名（`project.title`）：优先从用户参数获取（若参数不像 slug，则把它当作书名）；否则询问用户书名。
+- 默认 `<novel_id>` 由书名生成（用于目录名，且后续命令以空格分词时不会断开）：
+  - 空白/下划线替换为 `-`
+  - 移除 `\\` `/` 以及 Windows 非法字符 `< > : " | ? *`
+  - 合并重复 `-`，并去掉首尾 `-`
+  - 若适用，转为小写
+- 若生成结果为空，回退为 `my-novel`。
+- 若目录已存在，则在末尾追加 `-2`/`-3`… 直到唯一。
 
 用户参数：
 
 $ARGUMENTS
 
+交互与兜底（产品视角）：
+
+- 尽量让用户少输入：只要拿到书名就能初始化；其他字段可选。
+- 允许的参数形式（都可以不填）：
+  - `novel-init <novel_id_slug>`
+  - `novel-init "<书名>"`
+  - `novel-init <novel_id_slug> "<书名>"`
+- 若未提供书名：询问用户“书名是什么？（直接回车/回复 `默认` 使用：未命名长篇）”
+- 其余可选信息若用户愿意输入再问（不问也能跑通；用户回复 `默认/跳过` 就用默认值）：
+  - 题材/主题（默认：未指定）
+  - 目标字数/篇幅（默认：120000 字）
+  - 风格语气（默认：克制、有画面感）
+  - POV（默认：第三人称有限）
+  - 禁忌（默认：现代网络梗、过度解释、说教式总结）
+
 请按下面清单逐个写入（路径均相对于 `novels/<novel_id>/`，不要写成绝对路径）：
 
-- `config.yml` 内容：
+- `config.yml` 内容（如果用户提供了书名/题材/目标字数等信息，用它替换默认；否则保持默认值即可，保证“开箱即用”）：
 
 ```yml
 project:
   title: "未命名长篇"
+  genre: "未指定"
+  theme: "未指定"
+  target_words: 120000
   language: "zh-CN"
   pov_default: "第三人称有限"
 
 model:
   provider: "openai"
-  model: "gpt-4.1-mini"
-  temperature: 0.8
+  model: "gpt-5-mini"
+  temperature: 0.9
   max_output_tokens: 3000
 
 context:
@@ -129,4 +155,4 @@ status: draft
 
 写入完成后，用一段话告诉我创建了哪些文件、哪些被跳过（已存在）。
 
-最后调用 `novel.project.use` 将 active 设为本次创建的 `<novel_id>`。
+最后调用 `novel_project_use` 将 active 设为本次创建的 `<novel_id>`。

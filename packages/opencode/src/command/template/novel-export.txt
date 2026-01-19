@@ -2,5 +2,5 @@
 
 执行：
 
-1) 调用 `novel.export`，输出默认写到 `export/book.md`（相对于当前小说目录）。
+1) 调用 `novel_export`，输出默认写到 `export/book.md`（相对于当前小说目录）。
 2) 输出导出结果的路径与章节数量。

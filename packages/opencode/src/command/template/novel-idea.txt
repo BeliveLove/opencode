@@ -4,13 +4,17 @@
 
 $ARGUMENTS
 
+执行步骤：
+
+1) 读取 `config.yml` 与 `canon/` 作为约束与参考（用 `novel_fs_read`）。
+2) 按技能契约生成结构化块（YAML）与正文说明。
+3) 生成的正文说明与结构化块一起，追加写入 `notes/ideas.md`（使用 `novel_fs_write`，`mode=append`，必须落盘，不能只输出到对话里）。
+
 输出要求：
 
 1) 必须包含一个结构化块（YAML），至少给出：
    - `premise`（一句话前提）
    - `tone`（风格关键词数组）
    - `canon_drafts`（按 kind 分组的条目草案：characters/factions/rules/timeline/foreshadow/glossary）
-2) 生成的正文说明与结构化块一起，追加写入 `notes/ideas.md`（使用 `novel.fs.write`，`mode=append`）。
 
 注意：此命令只写入 `notes/ideas.md`，不要直接修改 `canon/`（写回由 `novel-check --apply` 负责）。
-

@@ -4,11 +4,10 @@ $ARGUMENTS
 
 执行步骤：
 
-1) 调用 `novel.canon.validate` 校验（传入 chapterId）。
-2) 调用 `novel.report.chapter` 生成“缺失引用/候选新增条目”报告。
-3) 输出一个“最小可执行修复方案”（改哪段/加哪句/延期到哪章），并给出建议的 `novel.canon.upsert` 草案输入（YAML），但默认不要应用。
+1) 调用 `novel_canon_validate` 校验（传入 chapterId）。
+2) 调用 `novel_report_chapter` 生成“缺失引用/候选新增条目”报告。
+3) 输出一个“最小可执行修复方案”（改哪段/加哪句/延期到哪章），并给出建议的 `novel_canon_upsert` 草案输入（YAML），但默认不要应用。
 
 可选行为：
 
-- 如果用户参数里包含 `--apply`：对“缺失引用（MISSING_REF）”里属于 `CHAR_/ORG_/RULE_/EVT_/FB_/LOC_/ITEM_` 的条目，生成最小条目骨架并逐条调用 `novel.canon.upsert`（`apply=true`，`source.chapter=<CH>`），然后再次运行 `novel.canon.validate` 直到通过或给出阻塞原因。
-
+- 如果用户参数里包含 `--apply`：对“缺失引用（MISSING_REF）”里属于 `CHAR_/ORG_/RULE_/EVT_/FB_/LOC_/ITEM_` 的条目，生成最小条目骨架并逐条调用 `novel_canon_upsert`（`apply=true`，`source.chapter=<CH>`），然后再次运行 `novel_canon_validate` 直到通过或给出阻塞原因。

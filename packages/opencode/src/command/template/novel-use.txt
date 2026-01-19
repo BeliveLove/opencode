@@ -6,5 +6,5 @@ $ARGUMENTS
 
 执行：
 
-1) 从参数里提取 novelId（第一个 token），并调用 `novel.project.use`。
+1) 从参数里提取 novelId（第一个 token），并调用 `novel_project_use`。
 2) 输出切换结果（ok/active），若失败给出下一步（例如先运行 `novel-init <novel_id>`）。

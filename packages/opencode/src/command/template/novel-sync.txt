@@ -1,0 +1,30 @@
+﻿对当前 active 小说做一次“统筹全文”的同步：刷新导出、更新关系网与人物弧线、生成总览与可视化报告，并全部落盘，确保所见即所得。
+
+目标产物（全部写入文件）：
+
+- `export/book.md`（由 `novel_export` 生成）
+- `canon/relations.yml`（人物/势力关系）
+- `canon/arcs.yml`（人物成长弧线/转折点）
+- `notes/overview.md`（小说总览/推进建议）
+- `notes/relations.md`（关系图：Mermaid）
+- `notes/arcs.md`（人物弧线报告）
+- 可选：`notes/timeline.md`（时间线图：Mermaid）
+
+输入（可选）：
+
+$ARGUMENTS
+
+执行步骤：
+
+1) 先调用 `novel_export` 刷新 `export/book.md`（确保导出所见即所得）。
+2) 用 `novel_fs_read` 读取 `config.yml`、`canon/*`、`export/book.md`、以及 `notes/ideas.md`/`notes/scenes.md`（若存在）。
+3) 更新并落盘：
+   - 生成并覆盖写入 `canon/relations.yml`（用 `novel_fs_write`，`mode=overwrite`）。
+   - 生成并覆盖写入 `canon/arcs.yml`（用 `novel_fs_write`，`mode=overwrite`）。
+4) 生成并落盘报告：
+   - 写入 `notes/overview.md`（必须包含 `schema: novel.overview.v1` 的 YAML 块 + Markdown 总览）。
+   - 调用 `novel_graph_relations`，写入 `notes/relations.md`。
+   - 写入 `notes/arcs.md`（按人物分节）。
+   - 可选：调用 `novel_graph_timeline`，写入 `notes/timeline.md`。
+5) 最后调用 `novel_canon_validate`（不带 chapterId）做一次基础校验；若有 error，给出“最小修复建议”，但不要擅自改动章节正文。
+6) 最后用简短要点告诉用户：写入了哪些文件、关键新增/变更点、以及下一步最推荐的 1–2 个命令。

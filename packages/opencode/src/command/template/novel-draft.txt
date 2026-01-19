@@ -6,9 +6,9 @@ $ARGUMENTS
 
 执行步骤：
 
-1) 读取 `outlines/<CH>.outline.md` 与 `canon/`（用 `novel.fs.read`）。
+1) 读取 `config.yml`、`outlines/<CH>.outline.md` 与 `canon/`（用 `novel_fs_read`）。
 2) 生成该章正文：
    - 章首必须包含 YAML frontmatter（参考文档字段：id/title/pov/time_anchor/locations/participants/refs/status）
    - 每个场景标题必须是 `## SC_<章节ID>_<序号> ...`
    - 在涉及设定/人物/伏笔时，尽量使用 `[REF: ...]` 标注可追溯 ID
-3) 写入 `chapters/<CH>.md`（用 `novel.fs.write`，`mode=overwrite`）。
+3) 写入 `chapters/<CH>.md`（用 `novel_fs_write`，`mode=overwrite`，必须落盘，不能只输出到对话里）。

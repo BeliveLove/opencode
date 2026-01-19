@@ -1,0 +1,39 @@
+﻿基于当前小说全文（章节）与 canon，提取并更新“人物关系 / 势力关系”，并立刻落盘，保证导出所见即所得。
+
+目标产物：
+
+- 更新 `canon/relations.yml`
+- 生成可视化报告 `notes/relations.md`（Mermaid 图）
+
+输入（可选）：
+
+$ARGUMENTS
+
+执行步骤：
+
+1) 先调用 `novel_export` 刷新 `export/book.md`（确保导出所见即所得）。
+2) 用 `novel_fs_read` 读取：`config.yml`、`canon/characters.yml`、`canon/factions.yml`、`canon/relations.yml`（若不存在视为空）、`export/book.md`。
+3) 生成新的 `canon/relations.yml` 内容（YAML 数组；每条必须包含 `id`）：
+
+关系条目建议字段（可按需增减，但 `id/from/to/type` 必须有）：
+
+```yml
+- id: REL_CHAR_A__CHAR_B
+  from: CHAR_A
+  to: CHAR_B
+  type: ally # ally|enemy|mentor|family|rival|member_of|owes|protects|…（自定义也可）
+  since: CH_01_001
+  note: "一句话说明关系与张力"
+  evidence:
+    - chapter: CH_01_001
+      quote: "不超过 20 字的证据（可选）"
+```
+
+规则：
+- 既要包含人物-人物（CHAR↔CHAR），也要包含人物-势力（CHAR↔ORG）与势力-势力（ORG↔ORG）。
+- `id` 要稳定：优先由 `from/to` 组合生成（必要时加序号），避免每次运行都变动。
+- 对于不确定的关系，用 `note`/`confidence` 标注，不要瞎编定论。
+
+4) 用 `novel_fs_write` 将结果覆盖写入 `canon/relations.yml`（`mode=overwrite`，必须落盘）。
+5) 调用 `novel_graph_relations` 生成 Mermaid 关系图，并用 `novel_fs_write` 写入 `notes/relations.md`（`mode=overwrite`，必须落盘）。
+6) 最后输出简短摘要：新增/更新了多少条关系、写入了哪些文件；若信息不足，说明缺口并给出下一步（例如先补齐 `canon/characters.yml`/`canon/factions.yml`）。

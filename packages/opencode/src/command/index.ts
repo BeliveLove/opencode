@@ -14,6 +14,10 @@ import PROMPT_NOVEL_CHECK from "./template/novel-check.txt"
 import PROMPT_NOVEL_IDEA from "./template/novel-idea.txt"
 import PROMPT_NOVEL_POLISH from "./template/novel-polish.txt"
 import PROMPT_NOVEL_EXPORT from "./template/novel-export.txt"
+import PROMPT_NOVEL_OVERVIEW from "./template/novel-overview.txt"
+import PROMPT_NOVEL_RELATIONS from "./template/novel-relations.txt"
+import PROMPT_NOVEL_ARCS from "./template/novel-arcs.txt"
+import PROMPT_NOVEL_SYNC from "./template/novel-sync.txt"
 import PROMPT_DOC_FLOW from "./template/doc-flow.txt"
 import PROMPT_SKILL_CREATE from "./template/skill-create.txt"
 import PROMPT_SKILL_LIST from "./template/skill-list.txt"
@@ -80,6 +84,10 @@ export namespace Command {
     NOVEL_IDEA: "novel-idea",
     NOVEL_POLISH: "novel-polish",
     NOVEL_EXPORT: "novel-export",
+    NOVEL_OVERVIEW: "novel-overview",
+    NOVEL_RELATIONS: "novel-relations",
+    NOVEL_ARCS: "novel-arcs",
+    NOVEL_SYNC: "novel-sync",
     SKILL_CREATE: "skill-create",
     SKILL_LIST: "skill-list",
     SKILL_SHOW: "skill-show",
@@ -122,6 +130,7 @@ export namespace Command {
       [Default.NOVEL_INIT]: {
         name: Default.NOVEL_INIT,
         description: "Initialize novel project structure",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_INIT
         },
@@ -130,6 +139,7 @@ export namespace Command {
       [Default.NOVEL_LIST]: {
         name: Default.NOVEL_LIST,
         description: "List novel projects and show active",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_LIST
         },
@@ -138,6 +148,7 @@ export namespace Command {
       [Default.NOVEL_USE]: {
         name: Default.NOVEL_USE,
         description: "Switch active novel project",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_USE
         },
@@ -146,6 +157,7 @@ export namespace Command {
       [Default.NOVEL_PLAN]: {
         name: Default.NOVEL_PLAN,
         description: "Create chapter outline and scene cards",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_PLAN
         },
@@ -154,6 +166,7 @@ export namespace Command {
       [Default.NOVEL_DRAFT]: {
         name: Default.NOVEL_DRAFT,
         description: "Draft chapter content from scene cards",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_DRAFT
         },
@@ -162,6 +175,7 @@ export namespace Command {
       [Default.NOVEL_CHECK]: {
         name: Default.NOVEL_CHECK,
         description: "Check canon/timeline/foreshadow issues",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_CHECK
         },
@@ -170,6 +184,7 @@ export namespace Command {
       [Default.NOVEL_IDEA]: {
         name: Default.NOVEL_IDEA,
         description: "Generate novel ideas and write to notes",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_IDEA
         },
@@ -178,6 +193,7 @@ export namespace Command {
       [Default.NOVEL_POLISH]: {
         name: Default.NOVEL_POLISH,
         description: "Polish chapter text (light + rewrite)",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_POLISH
         },
@@ -186,10 +202,47 @@ export namespace Command {
       [Default.NOVEL_EXPORT]: {
         name: Default.NOVEL_EXPORT,
         description: "Export chapters/book to Markdown",
+        agent: "novel",
         get template() {
           return PROMPT_NOVEL_EXPORT
         },
         hints: hints(PROMPT_NOVEL_EXPORT),
+      },
+      [Default.NOVEL_OVERVIEW]: {
+        name: Default.NOVEL_OVERVIEW,
+        description: "Generate a novel overview (bible) and write to notes",
+        agent: "novel",
+        get template() {
+          return PROMPT_NOVEL_OVERVIEW
+        },
+        hints: hints(PROMPT_NOVEL_OVERVIEW),
+      },
+      [Default.NOVEL_RELATIONS]: {
+        name: Default.NOVEL_RELATIONS,
+        description: "Extract/update character & faction relations (canon + graph)",
+        agent: "novel",
+        get template() {
+          return PROMPT_NOVEL_RELATIONS
+        },
+        hints: hints(PROMPT_NOVEL_RELATIONS),
+      },
+      [Default.NOVEL_ARCS]: {
+        name: Default.NOVEL_ARCS,
+        description: "Extract/update character arcs and turning points",
+        agent: "novel",
+        get template() {
+          return PROMPT_NOVEL_ARCS
+        },
+        hints: hints(PROMPT_NOVEL_ARCS),
+      },
+      [Default.NOVEL_SYNC]: {
+        name: Default.NOVEL_SYNC,
+        description: "Sync novel bible/relations/arcs to disk (WYSIWYG)",
+        agent: "novel",
+        get template() {
+          return PROMPT_NOVEL_SYNC
+        },
+        hints: hints(PROMPT_NOVEL_SYNC),
       },
       [Default.SKILL_CREATE]: {
         name: Default.SKILL_CREATE,
@@ -300,5 +353,3 @@ export namespace Command {
     return state().then((x) => Object.values(x))
   }
 }
-
-

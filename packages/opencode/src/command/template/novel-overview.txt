@@ -1,0 +1,62 @@
+﻿为当前 active 小说生成一份“统筹全文”的总览（小说圣经），并立即落盘到 `notes/overview.md`，用于长期维护一致性与创作推进。
+
+输入（可选）：
+
+$ARGUMENTS
+
+执行步骤：
+
+1) 先调用 `novel_export` 刷新 `export/book.md`（确保导出所见即所得）。
+2) 用 `novel_fs_read` 读取：
+   - `config.yml`
+   - `canon/characters.yml`、`canon/factions.yml`、`canon/relations.yml`、`canon/arcs.yml`、`canon/rules.yml`、`canon/timeline.yml`、`canon/foreshadow.yml`、`canon/glossary.yml`
+   - `export/book.md`
+   - 可选：`notes/ideas.md`、`notes/scenes.md`（若存在）
+3) 产出内容必须包含一个结构化块（YAML）+ 一份可读 Markdown。YAML 结构至少包含：
+
+```yml
+schema: novel.overview.v1
+project:
+  title: "..."
+  genre: "..."
+  theme: "..."
+  logline: "..."
+status:
+  chapter_count: 0
+  last_chapter: "CH_..."
+cast:
+  main_characters:
+    - id: CHAR_...
+      name: "..."
+      role: "..."
+      goal: "..."
+      inner_conflict: "..."
+      arc_summary: "..."
+factions:
+  - id: ORG_...
+    name: "..."
+    goal: "..."
+    conflict: "..."
+relations_summary:
+  key_edges:
+    - from: CHAR_...
+      to: CHAR_/ORG_...
+      type: "..."
+      note: "..."
+arcs:
+  - character: CHAR_...
+    turning_points:
+      - chapter: "CH_..."
+        change: "..."
+open_threads:
+  - "..."
+style_constraints:
+  pov: "..."
+  tone: ["..."]
+  taboo: ["..."]
+next_steps:
+  - "..."
+```
+
+4) 将“结构化块（YAML）+ Markdown 总览”写入 `notes/overview.md`（使用 `novel_fs_write`，`mode=overwrite`，必须落盘）。
+5) 最后用简短要点告诉用户：写入了哪些文件、是否覆盖、下一步推荐命令（例如 `novel-plan` / `novel-draft` / `novel-sync`）。

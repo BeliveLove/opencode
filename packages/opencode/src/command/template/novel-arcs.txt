@@ -1,0 +1,45 @@
+﻿基于当前小说全文（章节）与 canon，提取“人物成长弧线 / 性格转折点 / 关键选择”，并立刻落盘，形成可长期维护的全局视图。
+
+目标产物：
+
+- 更新 `canon/arcs.yml`
+- 生成可读报告 `notes/arcs.md`
+
+输入（可选）：
+
+$ARGUMENTS
+
+执行步骤：
+
+1) 先调用 `novel_export` 刷新 `export/book.md`（确保导出所见即所得）。
+2) 用 `novel_fs_read` 读取：`config.yml`、`canon/characters.yml`、`canon/arcs.yml`（若不存在视为空）、`export/book.md`。
+3) 生成新的 `canon/arcs.yml` 内容（YAML 数组；每条必须包含 `id`）：
+
+建议 schema（可按需增减，但 `id` 必须有，且每条至少能定位到一个人物）：
+
+```yml
+- id: ARC_CHAR_PROTAGONIST
+  character: CHAR_PROTAGONIST
+  arc_type: "成长/堕落/救赎/复仇/觉醒/…"
+  start_state: "开篇时的性格与处境"
+  desire: "外在目标"
+  need: "内在需求/真相"
+  flaw_or_lie: "性格缺陷/自我欺骗"
+  truth: "最终要学会的东西"
+  turning_points:
+    - chapter: CH_01_001
+      change: "性格/动机发生的明确变化"
+      trigger: "触发事件/关键选择"
+      evidence: "不超过 20 字（可选）"
+  current_state: "截至最新章节的状态"
+  unresolved: ["尚未解决的内在矛盾/外在悬念"]
+```
+
+规则：
+- 重点覆盖主要人物；次要人物可简化或暂不纳入。
+- “转折点”必须可定位：至少给出 `chapter`，并用一句话说明变化与触发。
+- 不要凭空补完后续剧情；只总结已写出来的内容，并把推测写成 `hypothesis`（若需要）。
+
+4) 用 `novel_fs_write` 将结果覆盖写入 `canon/arcs.yml`（`mode=overwrite`，必须落盘）。
+5) 生成一份可读的 `notes/arcs.md`（按人物分节：起点→转折点→当前→下一步建议），并用 `novel_fs_write` 写入（`mode=overwrite`，必须落盘）。
+6) 最后输出简短摘要：更新了哪些人物弧线、写入了哪些文件；并建议下一步（例如 `novel-relations` / `novel-overview` / `novel-check --apply`）。

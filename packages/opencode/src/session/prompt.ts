@@ -2,6 +2,7 @@ import path from "path"
 import os from "os"
 import fs from "fs/promises"
 import z from "zod"
+import YAML from "yaml"
 import { Identifier } from "../id/id"
 import { MessageV2 } from "./message-v2"
 import { Log } from "../util/log"
@@ -44,6 +45,7 @@ import { SessionStatus } from "./status"
 import { LLM } from "./llm"
 import { iife } from "@/util/iife"
 import { Shell } from "@/shell/shell"
+import { resolveNovelDir } from "../novel/paths"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -640,6 +642,26 @@ export namespace SessionPrompt {
     return Provider.defaultModel()
   }
 
+  async function novelConfigModel(): Promise<{ providerID: string; modelID: string } | undefined> {
+    try {
+      const dir = await resolveNovelDir()
+      const configPath = path.join(dir.abs, "config.yml")
+      const raw = await fs.readFile(configPath, "utf8").catch(() => "")
+      if (!raw.trim()) return undefined
+
+      const parsed = YAML.parse(raw) as any
+      const provider = (parsed?.model?.provider ?? "").toString().trim()
+      const model = (parsed?.model?.model ?? "").toString().trim()
+      if (!provider || !model) return undefined
+
+      const resolved = model.includes("/") ? Provider.parseModel(model) : { providerID: provider, modelID: model }
+      await Provider.getModel(resolved.providerID, resolved.modelID)
+      return resolved
+    } catch {
+      return undefined
+    }
+  }
+
   async function resolveTools(input: {
     agent: Agent.Info
     model: Provider.Model
@@ -820,6 +842,11 @@ export namespace SessionPrompt {
 
   async function createUserMessage(input: PromptInput) {
     const agent = await Agent.get(input.agent ?? (await Agent.defaultAgent()))
+    const model =
+      input.model ??
+      agent.model ??
+      (agent.name === "novel" ? await novelConfigModel() : undefined) ??
+      (await lastModel(input.sessionID))
     const info: MessageV2.Info = {
       id: input.messageID ?? Identifier.ascending("message"),
       role: "user",
@@ -829,7 +856,7 @@ export namespace SessionPrompt {
       },
       tools: input.tools,
       agent: agent.name,
-      model: input.model ?? agent.model ?? (await lastModel(input.sessionID)),
+      model,
       system: input.system,
       variant: input.variant,
     }
@@ -1645,6 +1672,10 @@ NOTE: At any point in time through this workflow you should feel free to ask the
         }
       }
       if (input.model) return Provider.parseModel(input.model)
+      if (agentName === "novel") {
+        const cfgModel = await novelConfigModel()
+        if (cfgModel) return cfgModel
+      }
       return await lastModel(input.sessionID)
     })()
 

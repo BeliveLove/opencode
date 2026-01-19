@@ -6,10 +6,10 @@ $ARGUMENTS
 
 执行步骤：
 
-1) 读取 `chapters/<CH>.md` 与 `canon/`（用 `novel.fs.read`）。
+1) 读取 `config.yml`、`chapters/<CH>.md` 与 `canon/`（用 `novel_fs_read`）。
 2) 输出两版：
    - 保守润色：尽量不改剧情，只改表达与节奏
    - 重写润色：允许调整段落顺序与场景推进，但不得引入新设定（除非同时给出写回计划）
-3) 默认写入 `chapters/<CH>.polished.md`（用 `novel.fs.write`，`mode=overwrite`）。
+3) 默认写入 `chapters/<CH>.polished.md`（用 `novel_fs_write`，`mode=overwrite`，必须落盘，不能只输出到对话里）。
 
 如果用户参数包含 `--inplace`，则覆盖 `chapters/<CH>.md`。

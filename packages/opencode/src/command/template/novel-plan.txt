@@ -6,9 +6,9 @@ $ARGUMENTS
 
 执行步骤：
 
-1) 读取 `canon/` 相关文件作为上下文（用 `novel.fs.read`）。
+1) 读取 `config.yml`（风格/禁忌/POV/题材）与 `canon/` 相关文件作为上下文（用 `novel_fs_read`）。
 2) 按技能要求输出结构化 `chapter_outline` 与 `scene_cards`（YAML）。
-3) 将结果写入 `outlines/<CH>.outline.md`（用 `novel.fs.write`，`mode=overwrite`）。
+3) 将结果写入 `outlines/<CH>.outline.md`（用 `novel_fs_write`，`mode=overwrite`，必须落盘，不能只输出到对话里）。
 
 约束：
 
