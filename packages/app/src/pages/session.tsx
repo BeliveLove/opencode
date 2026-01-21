@@ -387,6 +387,19 @@ export default function Page() {
 
   createEffect(
     on(
+      () => terminal.all().length,
+      (count, prevCount) => {
+        if (prevCount !== undefined && prevCount > 0 && count === 0) {
+          if (view().terminal.opened()) {
+            view().terminal.toggle()
+          }
+        }
+      },
+    ),
+  )
+
+  createEffect(
+    on(
       () => visibleUserMessages().at(-1)?.id,
       (lastId, prevLastId) => {
         if (lastId && prevLastId && lastId > prevLastId) {
@@ -456,7 +469,7 @@ export default function Page() {
       title: "New terminal",
       description: "Create a new terminal tab",
       category: "Terminal",
-      keybind: "ctrl+shift+`",
+      keybind: "ctrl+alt+t",
       onSelect: () => terminal.new(),
     },
     {
@@ -824,9 +837,21 @@ export default function Page() {
   })
 
   const isWorking = createMemo(() => status().type !== "idle")
+
   const autoScroll = createAutoScroll({
-    working: isWorking,
+    working: () => true,
   })
+
+  createEffect(
+    on(
+      isWorking,
+      (working, prev) => {
+        if (!working || prev) return
+        autoScroll.forceScrollToBottom()
+      },
+      { defer: true },
+    ),
+  )
 
   let scrollSpyFrame: number | undefined
   let scrollSpyTarget: HTMLDivElement | undefined
@@ -1248,9 +1273,9 @@ export default function Page() {
                             </Show>
                           </Match>
                           <Match when={true}>
-                            <div class="px-4 pt-18 pb-6 flex flex-col items-center justify-center text-center gap-3">
-                              <Mark class="w-6 opacity-40" />
-                              <div class="text-13-regular text-text-weak max-w-56">No changes in this session yet.</div>
+                            <div class="h-full px-4 pb-30 flex flex-col items-center justify-center text-center gap-6">
+                              <Mark class="w-14 opacity-10" />
+                              <div class="text-14-regular text-text-weak max-w-56">No changes in this session yet</div>
                             </div>
                           </Match>
                         </Switch>
@@ -1340,10 +1365,6 @@ export default function Page() {
                                   classList={{
                                     "min-w-0 w-full max-w-full": true,
                                     "md:max-w-200": !showTabs(),
-                                    "last:min-h-[calc(100vh-5.5rem-var(--prompt-height,8rem)-64px)] md:last:min-h-[calc(100vh-4.5rem-var(--prompt-height,10rem)-64px)]":
-                                      platform.platform !== "desktop",
-                                    "last:min-h-[calc(100vh-7rem-var(--prompt-height,8rem)-64px)] md:last:min-h-[calc(100vh-6rem-var(--prompt-height,10rem)-64px)]":
-                                      platform.platform === "desktop",
                                   }}
                                 >
                                   <SessionTurn
@@ -1524,9 +1545,9 @@ export default function Page() {
                             </Show>
                           </Match>
                           <Match when={true}>
-                            <div class="px-6 pt-18 pb-6 flex flex-col items-center justify-center text-center gap-3">
-                              <Mark class="w-6 opacity-40" />
-                              <div class="text-13-regular text-text-weak max-w-56">No changes in this session yet.</div>
+                            <div class="h-full px-6 pb-30 flex flex-col items-center justify-center text-center gap-6">
+                              <Mark class="w-14 opacity-10" />
+                              <div class="text-14-regular text-text-weak max-w-56">No changes in this session yet</div>
                             </div>
                           </Match>
                         </Switch>
